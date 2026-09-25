@@ -19,7 +19,6 @@
 
 <body>
 
-  <!-- Animated Background -->
   <div class="background">
     <div class="orb orb-one"></div>
     <div class="orb orb-two"></div>
@@ -29,7 +28,7 @@
   </div>
 
 
-  <!-- Splash -->
+  <!-- SPLASH -->
   <section id="splash" class="screen splash-screen">
 
     <div class="splash-content">
@@ -53,6 +52,11 @@
         <strong>ROKHAN SYED</strong>
       </div>
 
+      <div class="splash-info">
+        <span>DEVELOPER · LAWANGEN</span>
+        <span>ADMIN · ROKHAN SYED</span>
+      </div>
+
       <div class="loader">
         <span></span>
       </div>
@@ -62,7 +66,7 @@
   </section>
 
 
-  <!-- Login -->
+  <!-- LOGIN -->
   <section id="loginScreen" class="screen hidden">
 
     <div class="login-card glass">
@@ -74,7 +78,7 @@
       </div>
 
       <div class="login-role">
-        ADMIN PANEL
+        ADMIN / SELLER LOGIN
       </div>
 
       <div class="admin-name gradient-text">
@@ -91,6 +95,7 @@
       </p>
 
       <div class="input-box">
+
         <span>⌘</span>
 
         <input
@@ -100,7 +105,10 @@
           autocomplete="off"
         >
 
-        <button id="showKey" type="button">◉</button>
+        <button id="showKey" type="button">
+          ◉
+        </button>
+
       </div>
 
       <button id="loginButton" class="primary-button">
@@ -109,6 +117,28 @@
       </button>
 
       <div id="loginMessage" class="login-message"></div>
+
+
+      <!-- DEVELOPER OPTION -->
+      <div class="developer-divider">
+        <span>OR</span>
+      </div>
+
+      <button
+        id="developerLoginButton"
+        class="developer-login-button"
+        type="button"
+      >
+        <span>⌘</span>
+
+        <div>
+          <strong>DEVELOPER LOGIN</strong>
+          <small>Only developer can enter this interface</small>
+        </div>
+
+        <b>›</b>
+      </button>
+
 
       <div class="developer-credit">
         ᴅᴇᴠᴇʟᴏᴘᴇʀ
@@ -120,15 +150,84 @@
   </section>
 
 
-  <!-- Main App -->
+  <!-- DEVELOPER LOGIN -->
+  <section id="developerLoginScreen" class="screen hidden">
+
+    <div class="login-card glass">
+
+      <div id="developerLoginLogo" class="mini-logo">
+        
+      </div>
+
+      <div class="login-brand">
+        LAWANGEN
+      </div>
+
+      <div class="login-role">
+        DEVELOPER INTERFACE
+      </div>
+
+      <div class="admin-name gradient-text">
+        DEVELOPER ONLY
+      </div>
+
+      <p class="login-description">
+        Only developer can enter this interface
+      </p>
+
+      <div class="input-box">
+
+        <span>⌘</span>
+
+        <input
+          id="developerToken"
+          type="password"
+          placeholder="Enter Developer Token"
+          autocomplete="off"
+        >
+
+        <button id="showDeveloperToken" type="button">
+          ◉
+        </button>
+
+      </div>
+
+      <button
+        id="developerEnterButton"
+        class="primary-button"
+      >
+        <span>ENTER DEVELOPER PANEL</span>
+        <b>→</b>
+      </button>
+
+      <div
+        id="developerLoginMessage"
+        class="login-message"
+      ></div>
+
+      <button
+        id="backToAdminLogin"
+        class="back-login-button"
+        type="button"
+      >
+        ← BACK TO ADMIN / SELLER LOGIN
+      </button>
+
+    </div>
+
+  </section>
+
+
+  <!-- MAIN APP -->
   <section id="appScreen" class="app-screen hidden">
 
-    <!-- Top Bar -->
     <header class="topbar">
 
       <div>
         <div class="top-brand">LAWANGEN</div>
-        <div class="top-role">RESELLER CONTROL</div>
+        <div id="topRole" class="top-role">
+          RESELLER CONTROL
+        </div>
       </div>
 
       <button id="profileButton" class="profile-button">
@@ -142,13 +241,19 @@
     <main id="homePage" class="page active">
 
       <div class="welcome">
-        <div class="small-label">WELCOME BACK</div>
+
+        <div class="small-label">
+          WELCOME BACK
+        </div>
 
         <h1>
           ROKHAN <span>SYED</span>
         </h1>
 
-        <p>Admin control center</p>
+        <p id="homeDescription">
+          Admin control center
+        </p>
+
       </div>
 
 
@@ -221,8 +326,8 @@
 
       </div>
 
-
       <div class="search-box glass">
+
         <span>⌕</span>
 
         <input
@@ -231,7 +336,6 @@
         >
 
       </div>
-
 
       <div id="keyList" class="key-list"></div>
 
@@ -249,7 +353,6 @@
         </div>
 
       </div>
-
 
       <div class="user-summary glass">
 
@@ -270,7 +373,6 @@
 
       </div>
 
-
       <div id="userList" class="user-list"></div>
 
     </main>
@@ -287,7 +389,6 @@
         </div>
 
       </div>
-
 
       <div id="gameList" class="game-list"></div>
 
@@ -319,7 +420,112 @@
             ROKHAN SYED
           </div>
 
-          <small>AUTHORIZED ADMIN</small>
+          <small id="profileRole">
+            AUTHORIZED ADMIN
+          </small>
+
+        </div>
+
+      </div>
+
+
+      <!-- DEVELOPER ONLY -->
+      <div id="developerTools" class="developer-tools hidden">
+
+        <div class="settings-group">
+
+          <div class="settings-title">
+            DEVELOPER CONTROL
+          </div>
+
+
+          <div class="developer-create-card glass">
+
+            <div class="developer-tool-icon">
+              🔐
+            </div>
+
+            <div class="developer-tool-content">
+
+              <strong>
+                Create Admin Key
+              </strong>
+
+              <small>
+                Developer only
+              </small>
+
+            </div>
+
+            <button
+              id="createAdminKeyButton"
+              class="small-button"
+            >
+              CREATE
+            </button>
+
+          </div>
+
+
+          <div
+            id="newAdminKeyBox"
+            class="new-admin-key hidden"
+          >
+
+            <small>NEW ADMIN KEY</small>
+
+            <strong id="newAdminKey"></strong>
+
+            <button
+              id="copyAdminKeyButton"
+              class="small-button"
+            >
+              COPY KEY
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <div class="settings-group">
+
+          <div class="settings-title">
+            DEVELOPER BRANDING
+          </div>
+
+
+          <div class="setting-row glass">
+
+            <div>
+              <strong>Application Logo</strong>
+              <small>Developer only</small>
+            </div>
+
+            <button
+              id="selectLogoButton"
+              class="small-button"
+            >
+              SELECT
+            </button>
+
+          </div>
+
+
+          <input
+            id="logoFileInput"
+            type="file"
+            accept="image/png,image/jpeg,image/webp,image/*"
+            hidden
+          >
+
+          <button
+            id="removeLogoButton"
+            class="danger-button"
+            type="button"
+          >
+            REMOVE LOGO
+          </button>
 
         </div>
 
@@ -331,7 +537,6 @@
         <div class="settings-title">
           BRANDING
         </div>
-
 
         <div class="setting-row glass">
 
@@ -359,52 +564,11 @@
       </div>
 
 
-      <!-- Developer-only area -->
-      <div id="developerBranding" class="settings-group hidden">
-
-        <div class="settings-title">
-          DEVELOPER BRANDING
-        </div>
-
-
-        <div class="setting-row glass">
-
-          <div>
-            <strong>Application Logo</strong>
-            <small>Developer only</small>
-          </div>
-
-          <button id="selectLogoButton" class="small-button">
-            SELECT
-          </button>
-
-        </div>
-
-
-        <input
-          id="logoFileInput"
-          type="file"
-          accept="image/png,image/jpeg,image/webp,image/*"
-          hidden
-        >
-
-        <button
-          id="removeLogoButton"
-          class="danger-button"
-          type="button"
-        >
-          REMOVE LOGO
-        </button>
-
-      </div>
-
-
       <div class="settings-group">
 
         <div class="settings-title">
           EXPERIENCE
         </div>
-
 
         <div class="setting-row glass">
 
@@ -481,49 +645,30 @@
     </main>
 
 
-    <!-- Bottom Navigation -->
+    <!-- BOTTOM NAV -->
     <nav class="bottom-nav glass">
 
-      <button
-        class="nav-item active"
-        data-page="homePage"
-      >
+      <button class="nav-item active" data-page="homePage">
         <span>⌂</span>
         <small>Home</small>
       </button>
 
-
-      <button
-        class="nav-item"
-        data-page="keysPage"
-      >
+      <button class="nav-item" data-page="keysPage">
         <span>⌁</span>
         <small>Keys</small>
       </button>
 
-
-      <button
-        class="nav-item"
-        data-page="usersPage"
-      >
+      <button class="nav-item" data-page="usersPage">
         <span>♙</span>
         <small>Users</small>
       </button>
 
-
-      <button
-        class="nav-item"
-        data-page="gamesPage"
-      >
+      <button class="nav-item" data-page="gamesPage">
         <span>◈</span>
         <small>Games</small>
       </button>
 
-
-      <button
-        class="nav-item"
-        data-page="settingsPage"
-      >
+      <button class="nav-item" data-page="settingsPage">
         <span>⚙</span>
         <small>Settings</small>
       </button>
@@ -533,74 +678,43 @@
   </section>
 
 
-  <!-- Generate Key Modal -->
+  <!-- GENERATE USER KEY MODAL -->
   <div id="keyModal" class="modal hidden">
 
     <div class="modal-backdrop"></div>
 
     <div class="modal-card glass">
 
-      <button
-        id="closeModal"
-        class="modal-close"
-      >
+      <button id="closeModal" class="modal-close">
         ×
       </button>
-
 
       <div class="modal-icon">
         🔑
       </div>
 
-
-      <h2>
-        Generate Key
-      </h2>
-
+      <h2>Generate Key</h2>
 
       <p>
         Create a new user access key.
       </p>
 
-
-      <label>
-        GAME / SERVICE
-      </label>
-
+      <label>GAME / SERVICE</label>
 
       <select id="gameSelect">
         <option value="">Loading services...</option>
       </select>
 
-
-      <label>
-        EXPIRY
-      </label>
-
+      <label>EXPIRY</label>
 
       <select id="expirySelect">
 
-        <option value="1">
-          1 Day
-        </option>
-
-        <option value="7">
-          7 Days
-        </option>
-
-        <option
-          value="30"
-          selected
-        >
-          30 Days
-        </option>
-
-        <option value="90">
-          90 Days
-        </option>
+        <option value="1">1 Day</option>
+        <option value="7">7 Days</option>
+        <option value="30" selected>30 Days</option>
+        <option value="90">90 Days</option>
 
       </select>
-
 
       <button
         id="createKeyButton"
