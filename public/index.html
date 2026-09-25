@@ -14,6 +14,15 @@
 
   <title>LAWANGEN ADMIN</title>
 
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json">
+
+  <!-- iPhone Home Screen Icon -->
+  <link
+    rel="apple-touch-icon"
+    href="/logo.png"
+  >
+
   <link rel="stylesheet" href="style.css">
 </head>
 
@@ -225,6 +234,7 @@
 
       <div>
         <div class="top-brand">LAWANGEN</div>
+
         <div id="topRole" class="top-role">
           RESELLER CONTROL
         </div>
@@ -729,7 +739,24 @@
   </div>
 
 
+  <!-- MAIN JAVASCRIPT -->
   <script src="app.js"></script>
+
+
+  <!-- SERVICE WORKER -->
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/sw.js")
+          .catch(error => {
+            console.error(
+              "LAWANGEN Service Worker:",
+              error
+            );
+          });
+      });
+    }
+  </script>
 
 </body>
 </html>
