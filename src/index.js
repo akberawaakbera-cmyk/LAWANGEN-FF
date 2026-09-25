@@ -4,7 +4,7 @@ export default {
       JSON.stringify({
         success: true,
         message: "ROKHAN Worker is connected",
-        database: "Rokhan",
+        database: "rokhan",
         d1: !!env.DB
       }),
       {
