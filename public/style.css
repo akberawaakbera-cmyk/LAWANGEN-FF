@@ -1,0 +1,13 @@
+name = "lawangen-ff"
+main = "src/index.js"
+compatibility_date = "2026-09-25"
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+run_worker_first = ["/api/*"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "rokhan"
+database_id = "b00be3bb-2312-4e9e-be47-0a41f37f94cc"
