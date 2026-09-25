@@ -1,12 +1,9 @@
-/* =========================================
-   LAWANGEN ADMIN PANEL
-   Connected to Cloudflare Worker + D1
-========================================= */
-
 const API_BASE = "";
 
 const state = {
+  mode: "admin",
   admin: null,
+  developer: false,
   dashboard: null,
   keys: [],
   users: [],
@@ -25,98 +22,72 @@ const state = {
    ELEMENTS
 ========================================= */
 
-const splash =
-  document.getElementById("splash");
+const $ = (id) => document.getElementById(id);
 
-const loginScreen =
-  document.getElementById("loginScreen");
+const splash = $("splash");
+const loginScreen = $("loginScreen");
+const developerLoginScreen = $("developerLoginScreen");
+const appScreen = $("appScreen");
 
-const appScreen =
-  document.getElementById("appScreen");
+const adminKey = $("adminKey");
+const loginButton = $("loginButton");
+const loginMessage = $("loginMessage");
+const showKey = $("showKey");
 
-const adminKey =
-  document.getElementById("adminKey");
+const developerLoginButton = $("developerLoginButton");
+const developerToken = $("developerToken");
+const developerEnterButton = $("developerEnterButton");
+const developerLoginMessage = $("developerLoginMessage");
+const showDeveloperToken = $("showDeveloperToken");
+const backToAdminLogin = $("backToAdminLogin");
 
-const loginButton =
-  document.getElementById("loginButton");
+const keyModal = $("keyModal");
+const closeModal = $("closeModal");
+const generateKeyButton = $("generateKeyButton");
+const generateFromHome = $("generateFromHome");
+const createKeyButton = $("createKeyButton");
 
-const loginMessage =
-  document.getElementById("loginMessage");
+const logoutButton = $("logoutButton");
 
-const showKey =
-  document.getElementById("showKey");
+const soundToggle = $("soundToggle");
+const animationToggle = $("animationToggle");
 
-const keyModal =
-  document.getElementById("keyModal");
+const keyList = $("keyList");
+const userList = $("userList");
+const keySearch = $("keySearch");
 
-const closeModal =
-  document.getElementById("closeModal");
+const activeKeys = $("activeKeys");
+const totalUsers = $("totalUsers");
+const totalServices = $("totalServices");
 
-const generateKeyButton =
-  document.getElementById("generateKeyButton");
+const userCount = $("userCount");
+const activeUserCount = $("activeUserCount");
+const expiredUserCount = $("expiredUserCount");
 
-const generateFromHome =
-  document.getElementById("generateFromHome");
+const gameList = $("gameList");
+const activityList = $("activityList");
+const gameSelect = $("gameSelect");
 
-const createKeyButton =
-  document.getElementById("createKeyButton");
+const developerTools = $("developerTools");
+const selectLogoButton = $("selectLogoButton");
+const logoFileInput = $("logoFileInput");
+const removeLogoButton = $("removeLogoButton");
 
-const logoutButton =
-  document.getElementById("logoutButton");
+const createAdminKeyButton = $("createAdminKeyButton");
+const newAdminKeyBox = $("newAdminKeyBox");
+const newAdminKey = $("newAdminKey");
+const copyAdminKeyButton = $("copyAdminKeyButton");
 
-const soundToggle =
-  document.getElementById("soundToggle");
 
-const animationToggle =
-  document.getElementById("animationToggle");
+/* =========================================
+   LOCAL LOGO
+========================================= */
 
-const keyList =
-  document.getElementById("keyList");
+const savedLogo = localStorage.getItem("lawangenLogo");
 
-const userList =
-  document.getElementById("userList");
-
-const keySearch =
-  document.getElementById("keySearch");
-
-const activeKeys =
-  document.getElementById("activeKeys");
-
-const totalUsers =
-  document.getElementById("totalUsers");
-
-const totalServices =
-  document.getElementById("totalServices");
-
-const userCount =
-  document.getElementById("userCount");
-
-const activeUserCount =
-  document.getElementById("activeUserCount");
-
-const expiredUserCount =
-  document.getElementById("expiredUserCount");
-
-const gameList =
-  document.getElementById("gameList");
-
-const activityList =
-  document.getElementById("activityList");
-
-const gameSelect =
-  document.getElementById("gameSelect");
-
-const developerBranding =
-  document.getElementById("developerBranding");
-
-const selectLogoButton =
-  document.getElementById("selectLogoButton");
-
-const logoFileInput =
-  document.getElementById("logoFileInput");
-
-const removeLogoButton =
-  document.getElementById("removeLogoButton");
+if (savedLogo) {
+  applyLogoToUI(savedLogo);
+}
 
 
 /* =========================================
@@ -126,9 +97,10 @@ const removeLogoButton =
 setTimeout(() => {
 
   splash.classList.add("hidden");
+
   loginScreen.classList.remove("hidden");
 
-}, 3300);
+}, 7000);
 
 
 /* =========================================
@@ -147,8 +119,7 @@ function playSound(type = "click") {
       window.AudioContext ||
       window.webkitAudioContext;
 
-    const audio =
-      new AudioContext();
+    const audio = new AudioContext();
 
     const oscillator =
       audio.createOscillator();
@@ -161,13 +132,9 @@ function playSound(type = "click") {
 
     if (type === "success") {
       oscillator.frequency.value = 720;
-    }
-
-    else if (type === "error") {
+    } else if (type === "error") {
       oscillator.frequency.value = 180;
-    }
-
-    else {
+    } else {
       oscillator.frequency.value = 430;
     }
 
@@ -187,57 +154,42 @@ function playSound(type = "click") {
     );
 
     oscillator.start();
+    oscillator.stop(audio.currentTime + 0.11);
 
-    oscillator.stop(
-      audio.currentTime + 0.11
-    );
-
-  } catch {
-    // Sound is optional.
-  }
+  } catch {}
 }
 
 
 /* =========================================
-   API HELPER
+   API
 ========================================= */
 
-async function api(
-  path,
-  options = {}
-) {
+async function api(path, options = {}) {
 
-  const response =
-    await fetch(
-      API_BASE + path,
-      {
-        credentials: "include",
-
-        ...options,
-
-        headers: {
-          "Content-Type": "application/json",
-          ...(options.headers || {})
-        }
+  const response = await fetch(
+    API_BASE + path,
+    {
+      credentials: "include",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...(options.headers || {})
       }
-    );
+    }
+  );
 
   let data = {};
 
   try {
     data = await response.json();
-  } catch {
-    data = {};
-  }
+  } catch {}
 
   if (!response.ok) {
-
     throw new Error(
       data.error ||
       data.message ||
       `Request failed (${response.status})`
     );
-
   }
 
   return data;
@@ -245,39 +197,103 @@ async function api(
 
 
 /* =========================================
-   SHOW / HIDE KEY
+   BRANDING
 ========================================= */
 
-showKey.addEventListener(
-  "click",
-  () => {
+async function loadPublicBranding() {
 
-    playSound();
+  try {
 
-    if (
-      adminKey.type ===
-      "password"
-    ) {
+    const result =
+      await api("/api/admin/branding");
 
-      adminKey.type = "text";
-      showKey.textContent = "○";
+    if (result.branding) {
+
+      state.branding = {
+        ...state.branding,
+        ...result.branding
+      };
+
+      if (state.branding.logo_data) {
+
+        localStorage.setItem(
+          "lawangenLogo",
+          state.branding.logo_data
+        );
+
+        applyLogoToUI(
+          state.branding.logo_data
+        );
+
+      }
 
     }
 
-    else {
+  } catch (error) {
 
-      adminKey.type = "password";
-      showKey.textContent = "◉";
-
-    }
+    console.log(
+      "Branding:",
+      error
+    );
 
   }
-);
+
+}
+
+
+function applyLogoToUI(logo) {
+
+  if (!logo) return;
+
+  const ids = [
+    "splashLogo",
+    "loginLogo",
+    "developerLoginLogo"
+  ];
+
+  ids.forEach(id => {
+
+    const element = $(id);
+
+    if (!element) return;
+
+    element.innerHTML = "";
+
+    const img =
+      document.createElement("img");
+
+    img.src = logo;
+    img.alt = "LAWANGEN Logo";
+
+    element.appendChild(img);
+
+  });
+
+}
 
 
 /* =========================================
-   LOGIN
+   ADMIN LOGIN
 ========================================= */
+
+showKey.addEventListener("click", () => {
+
+  playSound();
+
+  if (adminKey.type === "password") {
+
+    adminKey.type = "text";
+    showKey.textContent = "○";
+
+  } else {
+
+    adminKey.type = "password";
+    showKey.textContent = "◉";
+
+  }
+
+});
+
 
 loginButton.addEventListener(
   "click",
@@ -307,20 +323,15 @@ async function login() {
     loginMessage.textContent =
       "Please enter your Admin Key.";
 
-    loginMessage.style.color =
-      "";
-
     playSound("error");
 
     return;
   }
 
-
   loginButton.disabled = true;
 
   loginButton.querySelector("span").textContent =
     "VERIFYING...";
-
 
   try {
 
@@ -329,13 +340,11 @@ async function login() {
         "/api/admin/login",
         {
           method: "POST",
-
           body: JSON.stringify({
             admin_key: entered
           })
         }
       );
-
 
     if (!result.success) {
       throw new Error(
@@ -344,6 +353,9 @@ async function login() {
       );
     }
 
+    state.mode = "admin";
+    state.admin = result.admin;
+    state.developer = false;
 
     loginMessage.textContent =
       "✓ Access verified";
@@ -353,25 +365,19 @@ async function login() {
 
     playSound("success");
 
+    await openAdminPanel();
 
-    await openPanel();
-
-  }
-
-  catch (error) {
+  } catch (error) {
 
     loginMessage.textContent =
       error.message ||
       "Invalid or expired Admin Key.";
 
-    loginMessage.style.color =
-      "";
+    loginMessage.style.color = "";
 
     playSound("error");
 
-  }
-
-  finally {
+  } finally {
 
     loginButton.disabled = false;
 
@@ -384,57 +390,153 @@ async function login() {
 
 
 /* =========================================
-   OPEN PANEL
+   DEVELOPER LOGIN SCREEN
 ========================================= */
 
-async function openPanel() {
+developerLoginButton.addEventListener(
+  "click",
+  () => {
 
-  try {
+    playSound();
 
-    const me =
-      await api(
-        "/api/admin/me"
-      );
+    loginScreen.classList.add("hidden");
 
-    if (!me.success) {
-      throw new Error("Session expired.");
+    developerLoginScreen.classList.remove("hidden");
+
+    developerToken.focus();
+
+  }
+);
+
+
+backToAdminLogin.addEventListener(
+  "click",
+  () => {
+
+    playSound();
+
+    developerLoginScreen.classList.add("hidden");
+
+    loginScreen.classList.remove("hidden");
+
+    developerLoginMessage.textContent = "";
+
+  }
+);
+
+
+showDeveloperToken.addEventListener(
+  "click",
+  () => {
+
+    playSound();
+
+    if (
+      developerToken.type === "password"
+    ) {
+
+      developerToken.type = "text";
+      showDeveloperToken.textContent = "○";
+
+    } else {
+
+      developerToken.type = "password";
+      showDeveloperToken.textContent = "◉";
+
     }
 
-
-    state.admin =
-      me.admin;
-
-
-    loginScreen.classList.add(
-      "hidden"
-    );
-
-    appScreen.classList.remove(
-      "hidden"
-    );
+  }
+);
 
 
-    updateAdminIdentity();
+developerEnterButton.addEventListener(
+  "click",
+  developerLogin
+);
 
-    await loadAll();
 
-    switchPage("homePage");
+developerToken.addEventListener(
+  "keydown",
+  event => {
+
+    if (event.key === "Enter") {
+      developerLogin();
+    }
+
+  }
+);
+
+
+async function developerLogin() {
+
+  const token =
+    developerToken.value.trim();
+
+  if (!token) {
+
+    developerLoginMessage.textContent =
+      "Developer access denied.";
+
+    playSound("error");
+
+    return;
 
   }
 
-  catch (error) {
+  developerEnterButton.disabled = true;
 
-    loginMessage.textContent =
-      error.message ||
-      "Unable to open admin panel.";
+  developerEnterButton.querySelector("span").textContent =
+    "VERIFYING...";
 
-    loginScreen.classList.remove(
-      "hidden"
-    );
+  try {
 
-    appScreen.classList.add(
-      "hidden"
-    );
+    const result =
+      await api(
+        "/api/developer/login",
+        {
+          method: "POST",
+          headers: {
+            "X-Developer-Token": token
+          }
+        }
+      );
+
+    if (!result.success) {
+      throw new Error(
+        result.error ||
+        "Developer access denied."
+      );
+    }
+
+    state.mode = "developer";
+    state.developer = true;
+    state.admin = null;
+
+    developerLoginMessage.textContent =
+      "✓ Developer access verified";
+
+    developerLoginMessage.style.color =
+      "#35ff9b";
+
+    playSound("success");
+
+    await openDeveloperPanel();
+
+  } catch (error) {
+
+    developerLoginMessage.textContent =
+      "Developer access denied.";
+
+    developerLoginMessage.style.color = "";
+
+    playSound("error");
+
+  } finally {
+
+    developerEnterButton.disabled = false;
+
+    developerEnterButton.querySelector("span").textContent =
+      "ENTER DEVELOPER PANEL";
 
   }
 
@@ -442,7 +544,115 @@ async function openPanel() {
 
 
 /* =========================================
-   LOAD EVERYTHING
+   OPEN ADMIN PANEL
+========================================= */
+
+async function openAdminPanel() {
+
+  try {
+
+    const me =
+      await api("/api/admin/me");
+
+    if (!me.success) {
+      throw new Error("Session expired.");
+    }
+
+    state.admin = me.admin;
+    state.mode = "admin";
+    state.developer = false;
+
+    developerTools.classList.add("hidden");
+
+    $("topRole").textContent =
+      "RESELLER CONTROL";
+
+    $("profileRole").textContent =
+      "AUTHORIZED ADMIN";
+
+    $("homeDescription").textContent =
+      "Admin control center";
+
+    loginScreen.classList.add("hidden");
+    developerLoginScreen.classList.add("hidden");
+    appScreen.classList.remove("hidden");
+
+    updateAdminIdentity();
+
+    await loadAll();
+
+    switchPage("homePage");
+
+  } catch (error) {
+
+    loginMessage.textContent =
+      error.message ||
+      "Unable to open admin panel.";
+
+    appScreen.classList.add("hidden");
+    loginScreen.classList.remove("hidden");
+
+  }
+
+}
+
+
+/* =========================================
+   OPEN DEVELOPER PANEL
+========================================= */
+
+async function openDeveloperPanel() {
+
+  try {
+
+    const result =
+      await api("/api/developer/me");
+
+    if (!result.success) {
+      throw new Error("Developer session expired.");
+    }
+
+    state.mode = "developer";
+    state.developer = true;
+
+    developerTools.classList.remove("hidden");
+
+    $("topRole").textContent =
+      "DEVELOPER CONTROL";
+
+    $("profileRole").textContent =
+      "AUTHORIZED DEVELOPER";
+
+    $("homeDescription").textContent =
+      "Developer control center";
+
+    document.querySelector(".welcome h1").innerHTML =
+      "LAWANGEN <span>DEVELOPER</span>";
+
+    loginScreen.classList.add("hidden");
+    developerLoginScreen.classList.add("hidden");
+    appScreen.classList.remove("hidden");
+
+    await loadPublicBranding();
+
+    switchPage("settingsPage");
+
+  } catch (error) {
+
+    developerLoginMessage.textContent =
+      error.message ||
+      "Developer session expired.";
+
+    appScreen.classList.add("hidden");
+    developerLoginScreen.classList.remove("hidden");
+
+  }
+
+}
+
+
+/* =========================================
+   LOAD ALL ADMIN DATA
 ========================================= */
 
 async function loadAll() {
@@ -453,7 +663,7 @@ async function loadAll() {
     loadUsers(),
     loadServices(),
     loadActivity(),
-    loadBranding()
+    loadPublicBranding()
   ]);
 
 }
@@ -469,17 +679,8 @@ function updateAdminIdentity() {
     state.admin?.name ||
     "ROKHAN SYED";
 
-
-  document
-    .querySelectorAll(
-      ".admin-name, .profile-name, .welcome h1"
-    );
-
-
   const welcome =
-    document.querySelector(
-      ".welcome h1"
-    );
+    document.querySelector(".welcome h1");
 
   if (welcome) {
 
@@ -494,11 +695,8 @@ function updateAdminIdentity() {
 
   }
 
-
   const profileName =
-    document.querySelector(
-      ".profile-name"
-    );
+    document.querySelector(".profile-name");
 
   if (profileName) {
     profileName.textContent = name;
@@ -516,38 +714,26 @@ async function loadDashboard() {
   try {
 
     const result =
-      await api(
-        "/api/admin/dashboard"
-      );
+      await api("/api/admin/dashboard");
 
-    if (!result.success) {
-      return;
-    }
+    if (!result.success) return;
 
-    state.dashboard =
-      result;
-
+    state.dashboard = result;
 
     activeKeys.textContent =
-      result.stats?.active_keys ??
-      0;
+      result.stats?.active_keys ?? 0;
 
     totalUsers.textContent =
-      result.stats?.total_users ??
-      0;
+      result.stats?.users ?? 0;
 
     totalServices.textContent =
-      result.stats?.total_services ??
-      0;
+      result.stats?.services ?? 0;
 
     renderActivity(
-      result.activity ||
-      []
+      result.activity || []
     );
 
-  }
-
-  catch (error) {
+  } catch (error) {
 
     console.error(
       "Dashboard:",
@@ -568,21 +754,16 @@ async function loadKeys() {
   try {
 
     const result =
-      await api(
-        "/api/admin/keys"
-      );
+      await api("/api/admin/keys");
 
     state.keys =
-      result.keys ||
-      [];
+      result.keys || [];
 
     renderKeys(
       keySearch.value
     );
 
-  }
-
-  catch (error) {
+  } catch (error) {
 
     console.error(
       "Keys:",
@@ -594,48 +775,33 @@ async function loadKeys() {
 }
 
 
-function renderKeys(
-  filter = ""
-) {
+function renderKeys(filter = "") {
 
   const search =
-    filter
-      .toLowerCase()
-      .trim();
-
+    filter.toLowerCase().trim();
 
   const filtered =
-    state.keys.filter(
-      item => {
+    state.keys.filter(item => {
 
-        return (
+      return (
+        String(
+          item.api_key || ""
+        )
+        .toLowerCase()
+        .includes(search)
 
-          String(
-            item.api_key ||
-            item.key ||
-            ""
-          )
-          .toLowerCase()
-          .includes(search)
+        ||
 
-          ||
+        String(
+          item.service || ""
+        )
+        .toLowerCase()
+        .includes(search)
+      );
 
-          String(
-            item.service ||
-            item.game ||
-            ""
-          )
-          .toLowerCase()
-          .includes(search)
-
-        );
-
-      }
-    );
-
+    });
 
   keyList.innerHTML = "";
-
 
   if (!filtered.length) {
 
@@ -650,164 +816,121 @@ function renderKeys(
     return;
   }
 
+  filtered.forEach(item => {
 
-  filtered.forEach(
-    item => {
+    const card =
+      document.createElement("div");
 
-      const card =
-        document.createElement(
-          "div"
-        );
+    card.className =
+      "key-card glass";
 
-      card.className =
-        "key-card glass";
+    const key =
+      item.api_key || "";
 
+    const service =
+      item.service || "Service";
 
-      const key =
-        item.api_key ||
-        item.key ||
-        "";
+    const status =
+      String(
+        item.status || "active"
+      ).toLowerCase();
 
+    const expiry =
+      formatExpiry(
+        item.expires_at
+      );
 
-      const service =
-        item.service ||
-        item.game ||
-        "Service";
+    card.innerHTML = `
 
+      <div class="key-top">
 
-      const status =
-        String(
-          item.status ||
-          "active"
-        ).toLowerCase();
+        <span class="key-value">
+          ${escapeHTML(key)}
+        </span>
 
+        <span class="badge ${escapeHTML(status)}">
+          ${escapeHTML(status.toUpperCase())}
+        </span>
 
-      const expiry =
-        formatExpiry(
-          item.expires_at ||
-          item.expiry
-        );
+      </div>
 
+      <div class="key-bottom">
 
-      card.innerHTML = `
+        <span>
+          ${escapeHTML(service)}
+        </span>
 
-        <div class="key-top">
+        <span>
+          ${escapeHTML(expiry)}
+        </span>
 
-          <span class="key-value">
-            ${escapeHTML(key)}
-          </span>
+      </div>
 
-          <span class="badge ${status}">
-            ${escapeHTML(status.toUpperCase())}
-          </span>
+      <div class="key-actions">
 
-        </div>
+        <button
+          class="small-button copy-button"
+          data-key="${escapeAttribute(key)}"
+        >
+          COPY
+        </button>
 
+        ${
+          status === "active"
+          ? `
+            <button
+              class="small-button revoke"
+              data-id="${item.id}"
+            >
+              REVOKE
+            </button>
+          `
+          : `
+            <button
+              class="small-button activate"
+              data-id="${item.id}"
+            >
+              ACTIVATE
+            </button>
+          `
+        }
 
-        <div class="key-bottom">
+      </div>
+    `;
 
-          <span>
-            ${escapeHTML(service)}
-          </span>
+    keyList.appendChild(card);
 
-          <span>
-            ${escapeHTML(expiry)}
-          </span>
-
-        </div>
-
-
-        <div class="key-actions">
-
-          <button
-            class="small-button copy-button"
-            data-key="${escapeAttribute(key)}"
-          >
-            COPY
-          </button>
-
-          ${
-            status === "active"
-            ? `
-              <button
-                class="small-button revoke"
-                data-id="${item.id}"
-              >
-                REVOKE
-              </button>
-            `
-            : `
-              <button
-                class="small-button activate"
-                data-id="${item.id}"
-              >
-                ACTIVATE
-              </button>
-            `
-          }
-
-        </div>
-
-      `;
-
-
-      keyList.appendChild(card);
-
-    }
-  );
-
+  });
 
   attachKeyActions();
 
 }
 
 
-/* =========================================
-   KEY ACTIONS
-========================================= */
-
 function attachKeyActions() {
 
   document
-    .querySelectorAll(
-      ".copy-button"
-    )
+    .querySelectorAll(".copy-button")
     .forEach(button => {
 
       button.addEventListener(
         "click",
         async () => {
 
-          playSound();
-
-          const key =
-            button.dataset.key;
-
           try {
 
-            await navigator
-              .clipboard
-              .writeText(key);
+            await navigator.clipboard.writeText(
+              button.dataset.key
+            );
 
             button.textContent =
               "COPIED ✓";
 
-            setTimeout(
-              () => {
-                button.textContent =
-                  "COPY";
-              },
-              1000
-            );
+            setTimeout(() => {
+              button.textContent = "COPY";
+            }, 1000);
 
-          }
-
-          catch {
-
-            button.textContent =
-              "COPY KEY";
-
-          }
+          } catch {}
 
         }
       );
@@ -816,9 +939,7 @@ function attachKeyActions() {
 
 
   document
-    .querySelectorAll(
-      ".revoke"
-    )
+    .querySelectorAll(".revoke")
     .forEach(button => {
 
       button.addEventListener(
@@ -832,9 +953,7 @@ function attachKeyActions() {
 
 
   document
-    .querySelectorAll(
-      ".activate"
-    )
+    .querySelectorAll(".activate")
     .forEach(button => {
 
       button.addEventListener(
@@ -853,8 +972,6 @@ async function revokeKey(id) {
 
   if (!id) return;
 
-  playSound();
-
   try {
 
     await api(
@@ -869,9 +986,7 @@ async function revokeKey(id) {
     await loadKeys();
     await loadDashboard();
 
-  }
-
-  catch (error) {
+  } catch (error) {
 
     playSound("error");
 
@@ -889,8 +1004,6 @@ async function activateKey(id) {
 
   if (!id) return;
 
-  playSound();
-
   try {
 
     await api(
@@ -905,9 +1018,7 @@ async function activateKey(id) {
     await loadKeys();
     await loadDashboard();
 
-  }
-
-  catch (error) {
+  } catch (error) {
 
     playSound("error");
 
@@ -921,18 +1032,10 @@ async function activateKey(id) {
 }
 
 
-/* =========================================
-   SEARCH
-========================================= */
-
 keySearch.addEventListener(
   "input",
   event => {
-
-    renderKeys(
-      event.target.value
-    );
-
+    renderKeys(event.target.value);
   }
 );
 
@@ -946,19 +1049,14 @@ async function loadUsers() {
   try {
 
     const result =
-      await api(
-        "/api/admin/users"
-      );
+      await api("/api/admin/users");
 
     state.users =
-      result.users ||
-      [];
+      result.users || [];
 
     renderUsers();
 
-  }
-
-  catch (error) {
+  } catch (error) {
 
     console.error(
       "Users:",
@@ -974,100 +1072,79 @@ function renderUsers() {
 
   userList.innerHTML = "";
 
-
   let active = 0;
   let expired = 0;
 
+  state.users.forEach(user => {
 
-  state.users.forEach(
-    user => {
+    const card =
+      document.createElement("div");
 
-      const card =
-        document.createElement(
-          "div"
-        );
+    card.className =
+      "user-card glass";
 
-      card.className =
-        "user-card glass";
+    const name =
+      user.name ||
+      `User ${user.id}`;
 
+    const key =
+      user.api_key || "";
 
-      const name =
-        user.name ||
-        `User ${user.id}`;
+    const rawStatus =
+      String(
+        user.status || "Active"
+      );
 
+    const isActive =
+      rawStatus.toLowerCase() ===
+      "active";
 
-      const key =
-        user.api_key ||
-        user.key ||
-        "";
-
-
-      const rawStatus =
-        String(
-          user.status ||
-          "Active"
-        );
-
-
-      const isActive =
-        rawStatus.toLowerCase() ===
-        "active";
-
-
-      if (isActive) {
-        active++;
-      } else {
-        expired++;
-      }
-
-
-      const initials =
-        name
-          .split(" ")
-          .map(
-            word => word[0]
-          )
-          .join("")
-          .slice(0, 2)
-          .toUpperCase();
-
-
-      card.innerHTML = `
-
-        <div class="user-avatar">
-          ${escapeHTML(initials)}
-        </div>
-
-        <div class="user-info">
-
-          <strong>
-            ${escapeHTML(name)}
-          </strong>
-
-          <small>
-            ${escapeHTML(key)}
-          </small>
-
-        </div>
-
-        <span class="badge ${
-          isActive
-            ? "active"
-            : "expired"
-        }">
-          ${escapeHTML(
-            rawStatus.toUpperCase()
-          )}
-        </span>
-
-      `;
-
-
-      userList.appendChild(card);
-
+    if (isActive) {
+      active++;
+    } else {
+      expired++;
     }
-  );
 
+    const initials =
+      name
+        .split(" ")
+        .map(word => word[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase();
+
+    card.innerHTML = `
+
+      <div class="user-avatar">
+        ${escapeHTML(initials)}
+      </div>
+
+      <div class="user-info">
+
+        <strong>
+          ${escapeHTML(name)}
+        </strong>
+
+        <small>
+          ${escapeHTML(key)}
+        </small>
+
+      </div>
+
+      <span class="badge ${
+        isActive
+          ? "active"
+          : "expired"
+      }">
+        ${escapeHTML(
+          rawStatus.toUpperCase()
+        )}
+      </span>
+    `;
+
+    userList.appendChild(card);
+
+  });
 
   userCount.textContent =
     state.users.length;
@@ -1090,21 +1167,15 @@ async function loadServices() {
   try {
 
     const result =
-      await api(
-        "/api/admin/services"
-      );
+      await api("/api/admin/services");
 
     state.services =
-      result.services ||
-      [];
+      result.services || [];
 
     renderServices();
-
     populateGameSelect();
 
-  }
-
-  catch (error) {
+  } catch (error) {
 
     console.error(
       "Services:",
@@ -1120,7 +1191,6 @@ function renderServices() {
 
   gameList.innerHTML = "";
 
-
   if (!state.services.length) {
 
     gameList.innerHTML = `
@@ -1135,38 +1205,29 @@ function renderServices() {
     return;
   }
 
-
   state.services.forEach(
     (service, index) => {
 
       const card =
-        document.createElement(
-          "div"
-        );
+        document.createElement("div");
 
       card.className =
         "game-card glass";
-
 
       const name =
         service.name ||
         `Service ${index + 1}`;
 
-
       const status =
         String(
-          service.status ||
-          "online"
+          service.status || "active"
         );
-
 
       card.innerHTML = `
 
         <div class="game-logo">
           ${escapeHTML(
-            name
-              .slice(0, 2)
-              .toUpperCase()
+            name.slice(0, 2).toUpperCase()
           )}
         </div>
 
@@ -1188,9 +1249,7 @@ function renderServices() {
             ? "maintenance"
             : ""
         }"></span>
-
       `;
-
 
       gameList.appendChild(card);
 
@@ -1204,52 +1263,41 @@ function populateGameSelect() {
 
   gameSelect.innerHTML = "";
 
-
   if (!state.services.length) {
 
     const option =
-      document.createElement(
-        "option"
-      );
+      document.createElement("option");
 
     option.value = "";
     option.textContent =
       "No services available";
 
-    gameSelect.appendChild(
-      option
-    );
+    gameSelect.appendChild(option);
 
     return;
+
   }
 
+  state.services.forEach(service => {
 
-  state.services.forEach(
-    service => {
+    const option =
+      document.createElement("option");
 
-      const option =
-        document.createElement(
-          "option"
-        );
+    option.value =
+      service.name;
 
-      option.value =
-        service.name;
+    option.textContent =
+      service.name;
 
-      option.textContent =
-        service.name;
+    gameSelect.appendChild(option);
 
-      gameSelect.appendChild(
-        option
-      );
-
-    }
-  );
+  });
 
 }
 
 
 /* =========================================
-   CREATE KEY
+   CREATE USER KEY
 ========================================= */
 
 createKeyButton.addEventListener(
@@ -1265,24 +1313,15 @@ async function createKey() {
 
   const days =
     Number(
-      document.getElementById(
-        "expirySelect"
-      ).value
+      $("expirySelect").value
     );
 
-
   if (!service) {
-
     playSound("error");
-
     return;
-
   }
 
-
-  createKeyButton.disabled =
-    true;
-
+  createKeyButton.disabled = true;
 
   try {
 
@@ -1291,14 +1330,12 @@ async function createKey() {
         "/api/admin/keys",
         {
           method: "POST",
-
           body: JSON.stringify({
             service,
             days
           })
         }
       );
-
 
     if (!result.success) {
       throw new Error(
@@ -1307,23 +1344,17 @@ async function createKey() {
       );
     }
 
-
     playSound("success");
 
     closeKeyModal();
 
-    switchPage(
-      "keysPage"
-    );
-
+    switchPage("keysPage");
 
     await loadKeys();
     await loadUsers();
     await loadDashboard();
 
-  }
-
-  catch (error) {
+  } catch (error) {
 
     playSound("error");
 
@@ -1332,12 +1363,9 @@ async function createKey() {
       "Unable to create key."
     );
 
-  }
+  } finally {
 
-  finally {
-
-    createKeyButton.disabled =
-      false;
+    createKeyButton.disabled = false;
 
   }
 
@@ -1353,21 +1381,16 @@ async function loadActivity() {
   try {
 
     const result =
-      await api(
-        "/api/admin/activity"
-      );
+      await api("/api/admin/activity");
 
     state.activity =
-      result.activity ||
-      [];
+      result.activity || [];
 
     renderActivity(
       state.activity
     );
 
-  }
-
-  catch (error) {
+  } catch (error) {
 
     console.error(
       "Activity:",
@@ -1379,339 +1402,318 @@ async function loadActivity() {
 }
 
 
-function renderActivity(
-  items
-) {
+function renderActivity(items) {
 
   activityList.innerHTML = "";
-
 
   if (!items.length) {
 
     activityList.innerHTML = `
       <div class="activity">
+
         <div class="activity-icon blue">
           •
         </div>
 
         <div>
-          <strong>
-            No activity yet
-          </strong>
+          <strong>No activity yet</strong>
 
           <small>
             Your activity will appear here
           </small>
         </div>
+
       </div>
     `;
 
     return;
   }
 
-
   items
     .slice(0, 8)
-    .forEach(
-      item => {
+    .forEach(item => {
 
-        const activity =
-          document.createElement(
-            "div"
-          );
+      const activity =
+        document.createElement("div");
 
-        activity.className =
-          "activity";
+      activity.className =
+        "activity";
 
+      activity.innerHTML = `
 
-        activity.innerHTML = `
+        <div class="activity-icon blue">
+          •
+        </div>
 
-          <div class="activity-icon blue">
-            •
-          </div>
+        <div>
 
-          <div>
+          <strong>
+            ${escapeHTML(
+              item.action || "Activity"
+            )}
+          </strong>
 
-            <strong>
-              ${escapeHTML(
-                item.action ||
-                "Activity"
-              )}
-            </strong>
+          <small>
+            ${escapeHTML(
+              formatDate(item.created_at)
+            )}
+          </small>
 
-            <small>
-              ${escapeHTML(
-                formatDate(
-                  item.created_at
-                )
-              )}
-            </small>
+        </div>
+      `;
 
-          </div>
+      activityList.appendChild(
+        activity
+      );
 
-        `;
-
-
-        activityList.appendChild(
-          activity
-        );
-
-      }
-    );
+    });
 
 }
 
 
 /* =========================================
-   BRANDING
+   DEVELOPER CREATE ADMIN KEY
 ========================================= */
 
-async function loadBranding() {
+createAdminKeyButton.addEventListener(
+  "click",
+  createAdminKey
+);
+
+
+async function createAdminKey() {
+
+  if (!state.developer) {
+
+    alert(
+      "Developer access required."
+    );
+
+    return;
+
+  }
+
+  createAdminKeyButton.disabled = true;
+
+  createAdminKeyButton.textContent =
+    "WAIT...";
 
   try {
 
     const result =
       await api(
-        "/api/admin/branding"
+        "/api/developer/create-admin",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            name: "ROKHAN SYED",
+            days: 30
+          })
+        }
       );
 
-
-    if (result.branding) {
-
-      state.branding =
-        {
-          ...state.branding,
-          ...result.branding
-        };
-
+    if (!result.success) {
+      throw new Error(
+        result.error ||
+        "Unable to create Admin Key."
+      );
     }
 
+    newAdminKey.textContent =
+      result.admin_key;
 
-    applyBranding();
-
-
-    /*
-      Current reseller role is ADMIN.
-      Developer-only controls remain hidden.
-    */
-
-    if (
-      state.admin &&
-      String(
-        state.admin.role
-      ).toUpperCase() ===
-      "DEVELOPER"
-    ) {
-
-      developerBranding
-        .classList
-        .remove("hidden");
-
-    }
-
-  }
-
-  catch (error) {
-
-    console.error(
-      "Branding:",
-      error
+    newAdminKeyBox.classList.remove(
+      "hidden"
     );
+
+    playSound("success");
+
+  } catch (error) {
+
+    playSound("error");
+
+    alert(
+      error.message ||
+      "Developer authorization required."
+    );
+
+  } finally {
+
+    createAdminKeyButton.disabled = false;
+
+    createAdminKeyButton.textContent =
+      "CREATE";
 
   }
 
 }
 
 
-function applyBranding() {
+copyAdminKeyButton.addEventListener(
+  "click",
+  async () => {
 
-  const logo =
-    state.branding.logo_data;
+    const key =
+      newAdminKey.textContent.trim();
 
+    if (!key) return;
 
-  if (!logo) {
-    return;
-  }
+    try {
 
+      await navigator.clipboard.writeText(key);
 
-  const splashLogo =
-    document.getElementById(
-      "splashLogo"
-    );
+      copyAdminKeyButton.textContent =
+        "COPIED ✓";
 
-  const loginLogo =
-    document.getElementById(
-      "loginLogo"
-    );
+      setTimeout(() => {
 
+        copyAdminKeyButton.textContent =
+          "COPY KEY";
 
-  if (splashLogo) {
+      }, 1200);
 
-    splashLogo.innerHTML =
-      `<img
-        src="${escapeAttribute(logo)}"
-        alt="Logo"
-      >`;
+    } catch {}
 
   }
-
-
-  if (loginLogo) {
-
-    loginLogo.innerHTML =
-      `<img
-        src="${escapeAttribute(logo)}"
-        alt="Logo"
-      >`;
-
-  }
-
-}
+);
 
 
 /* =========================================
-   DEVELOPER LOGO SELECTOR
+   DEVELOPER LOGO
 ========================================= */
 
-if (selectLogoButton) {
+selectLogoButton.addEventListener(
+  "click",
+  () => {
 
-  selectLogoButton.addEventListener(
-    "click",
-    () => {
+    if (!state.developer) {
 
-      playSound();
+      alert(
+        "Developer access required."
+      );
 
-      logoFileInput.click();
-
-    }
-  );
-
-}
-
-
-if (logoFileInput) {
-
-  logoFileInput.addEventListener(
-    "change",
-    async event => {
-
-      const file =
-        event.target.files?.[0];
-
-      if (!file) return;
-
-
-      /*
-        Keep logo reasonably small.
-        Large images should be compressed
-        before saving into D1.
-      */
-
-      if (
-        file.size >
-        1000 * 1024
-      ) {
-
-        alert(
-          "Please select a logo smaller than 1 MB."
-        );
-
-        logoFileInput.value = "";
-
-        return;
-
-      }
-
-
-      try {
-
-        const data =
-          await fileToDataURL(
-            file
-          );
-
-
-        await api(
-          "/api/admin/branding",
-          {
-            method: "PUT",
-
-            body: JSON.stringify({
-              logo_data: data
-            })
-          }
-        );
-
-
-        state.branding.logo_data =
-          data;
-
-
-        applyBranding();
-
-        playSound("success");
-
-      }
-
-      catch (error) {
-
-        playSound("error");
-
-        alert(
-          error.message ||
-          "Unable to save logo."
-        );
-
-      }
+      return;
 
     }
-  );
 
-}
+    playSound();
 
+    logoFileInput.click();
 
-if (removeLogoButton) {
-
-  removeLogoButton.addEventListener(
-    "click",
-    async () => {
-
-      try {
-
-        await api(
-          "/api/admin/branding",
-          {
-            method: "PUT",
-
-            body: JSON.stringify({
-              logo_data: ""
-            })
-          }
-        );
+  }
+);
 
 
-        state.branding.logo_data =
-          "";
+logoFileInput.addEventListener(
+  "change",
+  async event => {
 
-        location.reload();
+    if (!state.developer) return;
 
-      }
+    const file =
+      event.target.files?.[0];
 
-      catch (error) {
+    if (!file) return;
 
-        playSound("error");
+    if (file.size > 1000 * 1024) {
 
-        alert(
-          error.message ||
-          "Unable to remove logo."
-        );
+      alert(
+        "Please select a logo smaller than 1 MB."
+      );
 
-      }
+      logoFileInput.value = "";
+
+      return;
 
     }
-  );
 
-}
+    try {
+
+      const data =
+        await fileToDataURL(file);
+
+      await api(
+        "/api/admin/branding",
+        {
+          method: "PUT",
+          body: JSON.stringify({
+            logo_data: data
+          })
+        }
+      );
+
+      state.branding.logo_data =
+        data;
+
+      localStorage.setItem(
+        "lawangenLogo",
+        data
+      );
+
+      applyLogoToUI(data);
+
+      playSound("success");
+
+    } catch (error) {
+
+      playSound("error");
+
+      alert(
+        error.message ||
+        "Unable to save logo."
+      );
+
+    }
+
+  }
+);
+
+
+removeLogoButton.addEventListener(
+  "click",
+  async () => {
+
+    if (!state.developer) {
+
+      alert(
+        "Developer access required."
+      );
+
+      return;
+
+    }
+
+    try {
+
+      await api(
+        "/api/admin/branding",
+        {
+          method: "PUT",
+          body: JSON.stringify({
+            logo_data: ""
+          })
+        }
+      );
+
+      localStorage.removeItem(
+        "lawangenLogo"
+      );
+
+      location.reload();
+
+    } catch (error) {
+
+      playSound("error");
+
+      alert(
+        error.message ||
+        "Unable to remove logo."
+      );
+
+    }
+
+  }
+);
 
 
 /* =========================================
@@ -1719,85 +1721,53 @@ if (removeLogoButton) {
 ========================================= */
 
 const navItems =
-  document.querySelectorAll(
-    ".nav-item"
-  );
+  document.querySelectorAll(".nav-item");
 
 const pages =
-  document.querySelectorAll(
-    ".page"
-  );
+  document.querySelectorAll(".page");
 
+navItems.forEach(item => {
 
-navItems.forEach(
-  item => {
+  item.addEventListener(
+    "click",
+    () => {
 
-    item.addEventListener(
-      "click",
-      () => {
+      playSound();
 
-        playSound();
-
-        switchPage(
-          item.dataset.page
-        );
-
-      }
-    );
-
-  }
-);
-
-
-function switchPage(
-  pageId
-) {
-
-  pages.forEach(
-    page => {
-      page.classList.remove(
-        "active"
+      switchPage(
+        item.dataset.page
       );
+
     }
   );
 
+});
 
-  navItems.forEach(
-    nav => {
-      nav.classList.remove(
-        "active"
-      );
-    }
-  );
 
+function switchPage(pageId) {
+
+  pages.forEach(page => {
+    page.classList.remove("active");
+  });
+
+  navItems.forEach(nav => {
+    nav.classList.remove("active");
+  });
 
   const page =
-    document.getElementById(
-      pageId
-    );
-
+    $(pageId);
 
   if (page) {
-
-    page.classList.add(
-      "active"
-    );
-
+    page.classList.add("active");
   }
-
 
   const activeNav =
     document.querySelector(
       `.nav-item[data-page="${pageId}"]`
     );
 
-
   if (activeNav) {
-
-    activeNav.classList.add(
-      "active"
-    );
-
+    activeNav.classList.add("active");
   }
 
 }
@@ -1807,22 +1777,16 @@ function switchPage(
    VIEW KEYS
 ========================================= */
 
-document
-  .getElementById(
-    "viewKeys"
-  )
-  .addEventListener(
-    "click",
-    () => {
+$("viewKeys").addEventListener(
+  "click",
+  () => {
 
-      playSound();
+    playSound();
 
-      switchPage(
-        "keysPage"
-      );
+    switchPage("keysPage");
 
-    }
-  );
+  }
+);
 
 
 /* =========================================
@@ -1833,7 +1797,6 @@ generateKeyButton.addEventListener(
   "click",
   openKeyModal
 );
-
 
 generateFromHome.addEventListener(
   "click",
@@ -1859,9 +1822,7 @@ closeModal.addEventListener(
 
 
 document
-  .querySelector(
-    ".modal-backdrop"
-  )
+  .querySelector(".modal-backdrop")
   .addEventListener(
     "click",
     closeKeyModal
@@ -1880,56 +1841,40 @@ function closeKeyModal() {
 
 
 /* =========================================
-   SOUND SETTING
+   SETTINGS
 ========================================= */
 
 soundToggle.addEventListener(
   "change",
   () => {
 
-    if (
-      soundToggle.checked
-    ) {
-
-      playSound(
-        "success"
-      );
-
+    if (soundToggle.checked) {
+      playSound("success");
     }
 
   }
 );
 
 
-/* =========================================
-   ANIMATION SETTING
-========================================= */
-
 animationToggle.addEventListener(
   "change",
   () => {
 
-    if (
-      !animationToggle.checked
-    ) {
+    if (!animationToggle.checked) {
 
       document
         .querySelectorAll("*")
-        .forEach(
-          element => {
+        .forEach(element => {
 
-            element.style.animation =
-              "none";
+          element.style.animation =
+            "none";
 
-            element.style.transition =
-              "none";
+          element.style.transition =
+            "none";
 
-          }
-        );
+        });
 
-    }
-
-    else {
+    } else {
 
       location.reload();
 
@@ -1951,78 +1896,103 @@ logoutButton.addEventListener(
 
     try {
 
-      await api(
-        "/api/admin/logout",
-        {
-          method: "POST"
-        }
-      );
+      if (state.mode === "developer") {
 
-    }
+        await api(
+          "/api/developer/logout",
+          {
+            method: "POST"
+          }
+        );
 
-    catch {
-      // Continue local logout.
-    }
+      } else {
 
+        await api(
+          "/api/admin/logout",
+          {
+            method: "POST"
+          }
+        );
 
-    appScreen.classList.add(
-      "hidden"
-    );
+      }
 
-    loginScreen.classList.remove(
-      "hidden"
-    );
+    } catch {}
 
+    state.mode = "admin";
+    state.admin = null;
+    state.developer = false;
 
-    adminKey.value =
-      "";
+    appScreen.classList.add("hidden");
 
-    loginMessage.textContent =
-      "";
+    developerLoginScreen.classList.add("hidden");
 
-    loginMessage.style.color =
-      "";
+    loginScreen.classList.remove("hidden");
 
+    adminKey.value = "";
+    developerToken.value = "";
 
-    switchPage(
-      "homePage"
-    );
+    loginMessage.textContent = "";
+    developerLoginMessage.textContent = "";
+
+    developerTools.classList.add("hidden");
+
+    switchPage("homePage");
 
   }
 );
 
 
 /* =========================================
-   AUTO SESSION CHECK
+   SESSION CHECK
 ========================================= */
 
 async function checkExistingSession() {
 
   try {
 
-    const result =
+    const developer =
+      await api(
+        "/api/developer/me"
+      );
+
+    if (
+      developer.success &&
+      developer.developer
+    ) {
+
+      state.mode = "developer";
+      state.developer = true;
+
+      await openDeveloperPanel();
+
+      return;
+
+    }
+
+  } catch {}
+
+
+  try {
+
+    const admin =
       await api(
         "/api/admin/me"
       );
 
-
     if (
-      result.success &&
-      result.admin
+      admin.success &&
+      admin.admin
     ) {
 
+      state.mode = "admin";
       state.admin =
-        result.admin;
+        admin.admin;
 
-      await openPanel();
+      await openAdminPanel();
 
     }
 
-  }
-
-  catch {
-    // Not logged in.
-  }
+  } catch {}
 
 }
 
@@ -2031,43 +2001,30 @@ async function checkExistingSession() {
    HELPERS
 ========================================= */
 
-function formatExpiry(
-  value
-) {
+function formatExpiry(value) {
 
   if (!value) {
     return "No expiry";
   }
 
-
   const date =
     new Date(value);
-
 
   if (
     Number.isNaN(
       date.getTime()
     )
   ) {
-
     return String(value);
-
   }
-
-
-  const now =
-    Date.now();
-
 
   const diff =
     date.getTime() -
-    now;
-
+    Date.now();
 
   if (diff <= 0) {
     return "Expired";
   }
-
 
   const days =
     Math.ceil(
@@ -2075,35 +2032,27 @@ function formatExpiry(
       (1000 * 60 * 60 * 24)
     );
 
-
   return `${days} day${days === 1 ? "" : "s"}`;
 
 }
 
 
-function formatDate(
-  value
-) {
+function formatDate(value) {
 
   if (!value) {
     return "Recently";
   }
 
-
   const date =
     new Date(value);
-
 
   if (
     Number.isNaN(
       date.getTime()
     )
   ) {
-
     return String(value);
-
   }
-
 
   return date.toLocaleString(
     undefined,
@@ -2116,9 +2065,7 @@ function formatDate(
 }
 
 
-function fileToDataURL(
-  file
-) {
+function fileToDataURL(file) {
 
   return new Promise(
     (resolve, reject) => {
@@ -2126,20 +2073,15 @@ function fileToDataURL(
       const reader =
         new FileReader();
 
-
       reader.onload =
         () => resolve(
           reader.result
         );
 
-
       reader.onerror =
         reject;
 
-
-      reader.readAsDataURL(
-        file
-      );
+      reader.readAsDataURL(file);
 
     }
   );
@@ -2147,44 +2089,23 @@ function fileToDataURL(
 }
 
 
-function escapeHTML(
-  value
-) {
+function escapeHTML(value) {
 
   return String(
     value ?? ""
   )
-  .replaceAll(
-    "&",
-    "&amp;"
-  )
-  .replaceAll(
-    "<",
-    "&lt;"
-  )
-  .replaceAll(
-    ">",
-    "&gt;"
-  )
-  .replaceAll(
-    '"',
-    "&quot;"
-  )
-  .replaceAll(
-    "'",
-    "&#039;"
-  );
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 
 }
 
 
-function escapeAttribute(
-  value
-) {
+function escapeAttribute(value) {
 
-  return escapeHTML(
-    value
-  );
+  return escapeHTML(value);
 
 }
 
@@ -2192,5 +2113,7 @@ function escapeAttribute(
 /* =========================================
    INITIALIZE
 ========================================= */
+
+loadPublicBranding();
 
 checkExistingSession();
