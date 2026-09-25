@@ -12,7 +12,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-  <title>LAWANGIN ADMIN</title>
+  <title>LAWANGEN ADMIN</title>
 
   <link rel="stylesheet" href="style.css">
 </head>
@@ -28,19 +28,29 @@
     <div class="particles"></div>
   </div>
 
+
   <!-- Splash -->
   <section id="splash" class="screen splash-screen">
 
     <div class="splash-content">
 
-      <div class="apple-mark"></div>
+      <div id="splashLogo" class="apple-mark"></div>
+
+      <div class="brand-subtitle stylish-developer">
+        ᴅᴇᴠᴇʟᴏᴘᴇʀ
+      </div>
 
       <div class="brand-title">
-        LAWANGIN
+        LAWANGEN
       </div>
 
       <div class="brand-subtitle">
         ADMIN PANEL
+      </div>
+
+      <div class="splash-developed">
+        Specially developed this admin panel for
+        <strong>ROKHAN SYED</strong>
       </div>
 
       <div class="loader">
@@ -57,10 +67,10 @@
 
     <div class="login-card glass">
 
-      <div class="mini-logo"></div>
+      <div id="loginLogo" class="mini-logo"></div>
 
       <div class="login-brand">
-        LAWANGIN
+        LAWANGEN
       </div>
 
       <div class="login-role">
@@ -71,18 +81,25 @@
         ROKHAN SYED
       </div>
 
+      <div class="login-developed">
+        Specially developed this admin panel for
+        <strong>ROKHAN SYED</strong>
+      </div>
+
       <p class="login-description">
         Authorized reseller access
       </p>
 
       <div class="input-box">
         <span>⌘</span>
+
         <input
           id="adminKey"
           type="password"
           placeholder="Enter Admin Key"
           autocomplete="off"
         >
+
         <button id="showKey" type="button">◉</button>
       </div>
 
@@ -94,7 +111,8 @@
       <div id="loginMessage" class="login-message"></div>
 
       <div class="developer-credit">
-        Developer <strong>LAWANGIN 444</strong>
+        ᴅᴇᴠᴇʟᴏᴘᴇʀ
+        <strong>LAWANGEN</strong>
       </div>
 
     </div>
@@ -109,7 +127,7 @@
     <header class="topbar">
 
       <div>
-        <div class="top-brand">LAWANGIN</div>
+        <div class="top-brand">LAWANGEN</div>
         <div class="top-role">RESELLER CONTROL</div>
       </div>
 
@@ -119,8 +137,6 @@
 
     </header>
 
-
-    <!-- Pages -->
 
     <!-- HOME -->
     <main id="homePage" class="page active">
@@ -141,19 +157,19 @@
         <div class="stat-card glass">
           <span class="stat-icon">🔑</span>
           <small>ACTIVE KEYS</small>
-          <strong id="activeKeys">128</strong>
+          <strong id="activeKeys">0</strong>
         </div>
 
         <div class="stat-card glass">
           <span class="stat-icon">👤</span>
           <small>USERS</small>
-          <strong id="totalUsers">94</strong>
+          <strong id="totalUsers">0</strong>
         </div>
 
         <div class="stat-card glass">
           <span class="stat-icon">🎮</span>
           <small>GAMES</small>
-          <strong>4</strong>
+          <strong id="totalServices">0</strong>
         </div>
 
         <div class="stat-card glass">
@@ -166,6 +182,7 @@
 
 
       <button id="generateFromHome" class="generate-button">
+
         <span class="plus">＋</span>
 
         <div>
@@ -174,6 +191,7 @@
         </div>
 
         <b>›</b>
+
       </button>
 
 
@@ -182,33 +200,7 @@
         <button id="viewKeys">VIEW ALL</button>
       </div>
 
-      <div class="activity-list glass">
-
-        <div class="activity">
-          <div class="activity-icon green">✓</div>
-          <div>
-            <strong>Key activated</strong>
-            <small>Today · 2 minutes ago</small>
-          </div>
-        </div>
-
-        <div class="activity">
-          <div class="activity-icon blue">+</div>
-          <div>
-            <strong>New key generated</strong>
-            <small>Today · 12 minutes ago</small>
-          </div>
-        </div>
-
-        <div class="activity">
-          <div class="activity-icon purple">◉</div>
-          <div>
-            <strong>Admin login</strong>
-            <small>Today · 25 minutes ago</small>
-          </div>
-        </div>
-
-      </div>
+      <div id="activityList" class="activity-list glass"></div>
 
     </main>
 
@@ -217,6 +209,7 @@
     <main id="keysPage" class="page">
 
       <div class="page-heading">
+
         <div>
           <div class="small-label">MANAGEMENT</div>
           <h2>Access Keys</h2>
@@ -225,12 +218,18 @@
         <button id="generateKeyButton" class="round-button">
           ＋
         </button>
+
       </div>
 
 
       <div class="search-box glass">
         <span>⌕</span>
-        <input id="keySearch" placeholder="Search keys">
+
+        <input
+          id="keySearch"
+          placeholder="Search keys"
+        >
+
       </div>
 
 
@@ -243,76 +242,54 @@
     <main id="usersPage" class="page">
 
       <div class="page-heading">
+
         <div>
           <div class="small-label">MANAGEMENT</div>
           <h2>Users</h2>
         </div>
+
       </div>
+
 
       <div class="user-summary glass">
 
         <div>
           <small>TOTAL USERS</small>
-          <strong id="userCount">94</strong>
+          <strong id="userCount">0</strong>
         </div>
 
         <div>
           <small>ACTIVE</small>
-          <strong class="online">81</strong>
+          <strong id="activeUserCount" class="online">0</strong>
         </div>
 
         <div>
           <small>EXPIRED</small>
-          <strong>13</strong>
+          <strong id="expiredUserCount">0</strong>
         </div>
 
       </div>
+
 
       <div id="userList" class="user-list"></div>
 
     </main>
 
 
-    <!-- GAMES -->
+    <!-- SERVICES -->
     <main id="gamesPage" class="page">
 
       <div class="page-heading">
+
         <div>
           <div class="small-label">SERVICES</div>
           <h2>Games</h2>
         </div>
-      </div>
-
-      <div class="game-list">
-
-        <div class="game-card glass">
-          <div class="game-logo">FF</div>
-          <div>
-            <strong>Game Service 01</strong>
-            <small>Online</small>
-          </div>
-          <span class="status-dot"></span>
-        </div>
-
-        <div class="game-card glass">
-          <div class="game-logo blue-logo">G2</div>
-          <div>
-            <strong>Game Service 02</strong>
-            <small>Online</small>
-          </div>
-          <span class="status-dot"></span>
-        </div>
-
-        <div class="game-card glass">
-          <div class="game-logo purple-logo">G3</div>
-          <div>
-            <strong>Game Service 03</strong>
-            <small>Maintenance</small>
-          </div>
-          <span class="status-dot maintenance"></span>
-        </div>
 
       </div>
+
+
+      <div id="gameList" class="game-list"></div>
 
     </main>
 
@@ -321,25 +298,29 @@
     <main id="settingsPage" class="page">
 
       <div class="page-heading">
+
         <div>
           <div class="small-label">SYSTEM</div>
           <h2>Settings</h2>
         </div>
+
       </div>
 
 
       <div class="profile-card glass">
 
-        <div class="large-avatar">
+        <div id="profileAvatar" class="large-avatar">
           RS
         </div>
 
         <div>
+
           <div class="gradient-text profile-name">
             ROKHAN SYED
           </div>
 
           <small>AUTHORIZED ADMIN</small>
+
         </div>
 
       </div>
@@ -351,23 +332,69 @@
           BRANDING
         </div>
 
+
         <div class="setting-row glass">
+
           <div>
             <strong>Developer</strong>
             <small>Application owner</small>
           </div>
 
-          <span>LAWANGIN 444</span>
+          <span>LAWANGEN</span>
+
         </div>
 
+
         <div class="setting-row glass">
+
           <div>
             <strong>Administrator</strong>
             <small>Current reseller</small>
           </div>
 
           <span>ROKHAN SYED</span>
+
         </div>
+
+      </div>
+
+
+      <!-- Developer-only area -->
+      <div id="developerBranding" class="settings-group hidden">
+
+        <div class="settings-title">
+          DEVELOPER BRANDING
+        </div>
+
+
+        <div class="setting-row glass">
+
+          <div>
+            <strong>Application Logo</strong>
+            <small>Developer only</small>
+          </div>
+
+          <button id="selectLogoButton" class="small-button">
+            SELECT
+          </button>
+
+        </div>
+
+
+        <input
+          id="logoFileInput"
+          type="file"
+          accept="image/png,image/jpeg,image/webp,image/*"
+          hidden
+        >
+
+        <button
+          id="removeLogoButton"
+          class="danger-button"
+          type="button"
+        >
+          REMOVE LOGO
+        </button>
 
       </div>
 
@@ -378,6 +405,7 @@
           EXPERIENCE
         </div>
 
+
         <div class="setting-row glass">
 
           <div>
@@ -386,8 +414,15 @@
           </div>
 
           <label class="switch">
-            <input id="soundToggle" type="checkbox" checked>
+
+            <input
+              id="soundToggle"
+              type="checkbox"
+              checked
+            >
+
             <span></span>
+
           </label>
 
         </div>
@@ -401,8 +436,15 @@
           </div>
 
           <label class="switch">
-            <input id="animationToggle" type="checkbox" checked>
+
+            <input
+              id="animationToggle"
+              type="checkbox"
+              checked
+            >
+
             <span></span>
+
           </label>
 
         </div>
@@ -416,7 +458,10 @@
           ACCOUNT
         </div>
 
-        <button id="logoutButton" class="danger-button">
+        <button
+          id="logoutButton"
+          class="danger-button"
+        >
           LOG OUT
         </button>
 
@@ -424,8 +469,13 @@
 
 
       <div class="app-footer">
+
         LAWANGEN ADMIN PANEL<br>
-        Developer · LAWANGIN 444
+
+        <span>
+          ᴅᴇᴠᴇʟᴏᴘᴇʀ · LAWANGEN
+        </span>
+
       </div>
 
     </main>
@@ -434,27 +484,46 @@
     <!-- Bottom Navigation -->
     <nav class="bottom-nav glass">
 
-      <button class="nav-item active" data-page="homePage">
+      <button
+        class="nav-item active"
+        data-page="homePage"
+      >
         <span>⌂</span>
         <small>Home</small>
       </button>
 
-      <button class="nav-item" data-page="keysPage">
+
+      <button
+        class="nav-item"
+        data-page="keysPage"
+      >
         <span>⌁</span>
         <small>Keys</small>
       </button>
 
-      <button class="nav-item" data-page="usersPage">
+
+      <button
+        class="nav-item"
+        data-page="usersPage"
+      >
         <span>♙</span>
         <small>Users</small>
       </button>
 
-      <button class="nav-item" data-page="gamesPage">
+
+      <button
+        class="nav-item"
+        data-page="gamesPage"
+      >
         <span>◈</span>
         <small>Games</small>
       </button>
 
-      <button class="nav-item" data-page="settingsPage">
+
+      <button
+        class="nav-item"
+        data-page="settingsPage"
+      >
         <span>⚙</span>
         <small>Settings</small>
       </button>
@@ -471,34 +540,72 @@
 
     <div class="modal-card glass">
 
-      <button id="closeModal" class="modal-close">×</button>
+      <button
+        id="closeModal"
+        class="modal-close"
+      >
+        ×
+      </button>
 
-      <div class="modal-icon">🔑</div>
 
-      <h2>Generate Key</h2>
+      <div class="modal-icon">
+        🔑
+      </div>
 
-      <p>Create a new user access key.</p>
 
-      <label>GAME / SERVICE</label>
+      <h2>
+        Generate Key
+      </h2>
+
+
+      <p>
+        Create a new user access key.
+      </p>
+
+
+      <label>
+        GAME / SERVICE
+      </label>
+
 
       <select id="gameSelect">
-        <option>Game Service 01</option>
-        <option>Game Service 02</option>
-        <option>Game Service 03</option>
+        <option value="">Loading services...</option>
       </select>
 
 
-      <label>EXPIRY</label>
+      <label>
+        EXPIRY
+      </label>
+
 
       <select id="expirySelect">
-        <option value="1">1 Day</option>
-        <option value="7">7 Days</option>
-        <option value="30" selected>30 Days</option>
-        <option value="90">90 Days</option>
+
+        <option value="1">
+          1 Day
+        </option>
+
+        <option value="7">
+          7 Days
+        </option>
+
+        <option
+          value="30"
+          selected
+        >
+          30 Days
+        </option>
+
+        <option value="90">
+          90 Days
+        </option>
+
       </select>
 
 
-      <button id="createKeyButton" class="primary-button">
+      <button
+        id="createKeyButton"
+        class="primary-button"
+      >
         CREATE KEY
         <b>→</b>
       </button>
