@@ -1,8 +1,12 @@
-name = "lawangen-ff"
-main = "src/index.js"
-compatibility_date = "2026-09-25"
+# ...
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+invocation_logs = true
+persist = true
 
-[[d1_databases]]
-binding = "DB"
-database_name = "Rokhan"
-database_id = "YOUR_DATABASE_ID"
+[observability.traces]
+enabled = false
+head_sampling_rate = 1
+persist = true
+# ...
