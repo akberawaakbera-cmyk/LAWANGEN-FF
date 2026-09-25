@@ -1,8 +1,7 @@
 name = "lawangen-ff"
 main = "src/index.js"
 compatibility_date = "2026-09-25"
-
 [[d1_databases]]
 binding = "DB"
-database_name = "Rokhan"
-database_id = "YOUR_DATABASE_ID"
+database_name = "rokhan"
+database_id = "b00be3bb-2312-4e9e-be47-0a41f37f94cc"
