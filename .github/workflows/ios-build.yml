@@ -2,6 +2,7 @@ name: LAWANGEN iOS Build
 
 on:
   workflow_dispatch:
+  pull_request:
 
 jobs:
   build:
@@ -20,7 +21,9 @@ jobs:
         run: npm install
 
       - name: Install Capacitor packages
-        run: npm install @capacitor/core @capacitor/cli @capacitor/ios
+        run: |
+          npm install @capacitor/core @capacitor/cli @capacitor/ios
+          npm install -D typescript
 
       - name: Add iOS platform
         run: npx cap add ios
