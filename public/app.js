@@ -122,9 +122,7 @@ const CONTROL_SERVERS = [
 
 
 /* =========================================
-   EXTRA PREMIUM GAME CSS
-   Injected by JS so style.css does not
-   need to be replaced.
+   PREMIUM GAME MANAGER CSS
 ========================================= */
 
 function injectGameManagerStyles() {
@@ -391,8 +389,7 @@ try {
 
 
 /* =========================================
-   SPLASH CONTROL
-   Approximately 7 seconds total.
+   SPLASH
 ========================================= */
 
 let splashFinished = false;
@@ -426,16 +423,7 @@ function finishSplash() {
   }, 650);
 }
 
-
-/*
-  6.35 sec + 0.65 sec fade
-  = approximately 7 seconds.
-*/
-
-setTimeout(
-  finishSplash,
-  6350
-);
+setTimeout(finishSplash, 6350);
 
 
 /* =========================================
@@ -1125,10 +1113,8 @@ async function openAdminPanel() {
       document.querySelector(".welcome h1");
 
     if (welcome) {
-
       welcome.innerHTML =
         "ROKHAN <span>SYED</span>";
-
     }
 
     hideAllEntryScreens();
@@ -1193,10 +1179,8 @@ async function openDeveloperPanel() {
       document.querySelector(".welcome h1");
 
     if (welcome) {
-
       welcome.innerHTML =
         "LAWANGEN <span>DEVELOPER</span>";
-
     }
 
     hideAllEntryScreens();
@@ -1204,12 +1188,15 @@ async function openDeveloperPanel() {
     appScreen.classList.remove("hidden");
 
     await loadPublicBranding();
-
+    await loadDashboard();
+    await loadKeys();
+    await loadUsers();
     await loadServices();
+    await loadActivity();
 
     renderServerControl();
 
-    switchPage("settingsPage");
+    switchPage("homePage");
 
   } catch (error) {
 
@@ -1233,14 +1220,12 @@ async function openDeveloperPanel() {
 async function loadAll() {
 
   await Promise.allSettled([
-
     loadDashboard(),
     loadKeys(),
     loadUsers(),
     loadServices(),
     loadActivity(),
     loadPublicBranding()
-
   ]);
 
   renderServerControl();
@@ -1259,9 +1244,7 @@ function updateAdminIdentity() {
     "ROKHAN SYED";
 
   const welcome =
-    document.querySelector(
-      ".welcome h1"
-    );
+    document.querySelector(".welcome h1");
 
   if (welcome) {
 
@@ -1279,9 +1262,7 @@ function updateAdminIdentity() {
   }
 
   const profileName =
-    document.querySelector(
-      ".profile-name"
-    );
+    document.querySelector(".profile-name");
 
   if (profileName) {
     profileName.textContent = name;
@@ -1313,10 +1294,13 @@ async function loadDashboard() {
 
   try {
 
+    const endpoint =
+      state.mode === "developer"
+        ? "/api/developer/dashboard"
+        : "/api/admin/dashboard";
+
     const result =
-      await api(
-        "/api/admin/dashboard"
-      );
+      await api(endpoint);
 
     if (!result.success) {
       return;
@@ -1359,10 +1343,13 @@ async function loadKeys() {
 
   try {
 
+    const endpoint =
+      state.mode === "developer"
+        ? "/api/developer/keys"
+        : "/api/admin/keys";
+
     const result =
-      await api(
-        "/api/admin/keys"
-      );
+      await api(endpoint);
 
     state.keys =
       result.keys || [];
@@ -1401,6 +1388,12 @@ function renderKeys(filter = "") {
         String(item.service || "")
           .toLowerCase()
           .includes(search)
+
+        ||
+
+        String(item.admin_name || "")
+          .toLowerCase()
+          .includes(search)
       );
 
     });
@@ -1422,8 +1415,8 @@ function renderKeys(filter = "") {
     `;
 
     return;
-
   }
+
 
   filtered.forEach(item => {
 
@@ -1476,6 +1469,21 @@ function renderKeys(filter = "") {
         </span>
 
       </div>
+
+      ${
+        state.developer && item.admin_name
+        ? `
+          <div style="
+            margin-top:7px;
+            font-size:10px;
+            color:#777;
+          ">
+            OWNER:
+            ${escapeHTML(item.admin_name)}
+          </div>
+        `
+        : ""
+      }
 
       <div class="key-actions">
 
@@ -1604,8 +1612,13 @@ async function revokeKey(id) {
 
   try {
 
+    const endpoint =
+      state.mode === "developer"
+        ? `/api/developer/keys/${encodeURIComponent(id)}/revoke`
+        : `/api/admin/keys/${encodeURIComponent(id)}/revoke`;
+
     await api(
-      `/api/admin/keys/${encodeURIComponent(id)}/revoke`,
+      endpoint,
       {
         method: "POST"
       }
@@ -1638,8 +1651,13 @@ async function activateKey(id) {
 
   try {
 
+    const endpoint =
+      state.mode === "developer"
+        ? `/api/developer/keys/${encodeURIComponent(id)}/activate`
+        : `/api/admin/keys/${encodeURIComponent(id)}/activate`;
+
     await api(
-      `/api/admin/keys/${encodeURIComponent(id)}/activate`,
+      endpoint,
       {
         method: "POST"
       }
@@ -1684,10 +1702,13 @@ async function loadUsers() {
 
   try {
 
+    const endpoint =
+      state.mode === "developer"
+        ? "/api/developer/users"
+        : "/api/admin/users";
+
     const result =
-      await api(
-        "/api/admin/users"
-      );
+      await api(endpoint);
 
     state.users =
       result.users || [];
@@ -1980,6 +2001,7 @@ function renderServices() {
               class="game-primary"
               data-game-action="rename"
               data-game-id="${service.id}"
+              type="button"
             >
               RENAME
             </button>
@@ -1988,6 +2010,7 @@ function renderServices() {
               class="game-primary"
               data-game-action="logo"
               data-game-id="${service.id}"
+              type="button"
             >
               CHANGE LOGO
             </button>
@@ -1998,6 +2021,7 @@ function renderServices() {
                 <button
                   data-game-action="remove-logo"
                   data-game-id="${service.id}"
+                  type="button"
                 >
                   REMOVE LOGO
                 </button>
@@ -2009,6 +2033,7 @@ function renderServices() {
               class="game-danger"
               data-game-action="delete"
               data-game-id="${service.id}"
+              type="button"
             >
               DELETE
             </button>
@@ -2383,6 +2408,10 @@ async function handleNewGameLogo(event) {
 }
 
 
+/* =========================================
+   SAVE NEW GAME
+========================================= */
+
 async function saveNewGame() {
 
   if (!state.developer) {
@@ -2551,6 +2580,7 @@ async function renameGame(id) {
     return;
 
   }
+
 
   if (
     name.toLowerCase() !==
@@ -3028,17 +3058,41 @@ async function createKey() {
 
     playSound("error");
 
+    alert("Please select a game/service.");
+
     return;
 
   }
 
+
+  if (!days || days < 1) {
+
+    playSound("error");
+
+    alert("Please select a valid expiry.");
+
+    return;
+
+  }
+
+
   createKeyButton.disabled = true;
+
+  createKeyButton.textContent =
+    "CREATING...";
+
 
   try {
 
+    const endpoint =
+      state.mode === "developer"
+        ? "/api/developer/keys"
+        : "/api/admin/keys";
+
+
     const result =
       await api(
-        "/api/admin/keys",
+        endpoint,
         {
           method: "POST",
 
@@ -3049,6 +3103,7 @@ async function createKey() {
         }
       );
 
+
     if (!result.success) {
 
       throw new Error(
@@ -3058,15 +3113,51 @@ async function createKey() {
 
     }
 
+
+    /*
+      Developer-created keys and Admin-created
+      keys are both returned by the backend.
+      Show the generated key immediately.
+    */
+
+    const generatedKey =
+      result.api_key ||
+      result.key ||
+      "";
+
+
     playSound("success");
 
     closeKeyModal();
 
-    switchPage("keysPage");
+    if (generatedKey) {
+
+      try {
+
+        await navigator.clipboard.writeText(
+          generatedKey
+        );
+
+        alert(
+          `KEY CREATED SUCCESSFULLY\n\n${generatedKey}\n\nThe key has also been copied.`
+        );
+
+      } catch {
+
+        alert(
+          `KEY CREATED SUCCESSFULLY\n\n${generatedKey}`
+        );
+
+      }
+
+    }
+
 
     await loadKeys();
     await loadUsers();
     await loadDashboard();
+
+    switchPage("keysPage");
 
   } catch (error) {
 
@@ -3079,7 +3170,11 @@ async function createKey() {
 
   } finally {
 
-    createKeyButton.disabled = false;
+    createKeyButton.disabled =
+      false;
+
+    createKeyButton.innerHTML =
+      `CREATE KEY <b>→</b>`;
 
   }
 
@@ -3094,10 +3189,13 @@ async function loadActivity() {
 
   try {
 
+    const endpoint =
+      state.mode === "developer"
+        ? "/api/developer/activity"
+        : "/api/admin/activity";
+
     const result =
-      await api(
-        "/api/admin/activity"
-      );
+      await api(endpoint);
 
     state.activity =
       result.activity || [];
@@ -3403,12 +3501,6 @@ logoFileInput.addEventListener(
       }
 
 
-      /*
-        IMPORTANT:
-        Only save to local cache after
-        server successfully accepts it.
-      */
-
       state.branding.logo_data =
         data;
 
@@ -3571,15 +3663,11 @@ navItems.forEach(item => {
 function switchPage(pageId) {
 
   pages.forEach(page => {
-
     page.classList.remove("active");
-
   });
 
   navItems.forEach(nav => {
-
     nav.classList.remove("active");
-
   });
 
   const page =
@@ -3606,6 +3694,16 @@ function switchPage(pageId) {
 
   if (pageId === "gamesPage") {
     renderServices();
+  }
+
+
+  if (pageId === "keysPage") {
+    renderKeys(keySearch.value);
+  }
+
+
+  if (pageId === "usersPage") {
+    renderUsers();
   }
 
 }
@@ -4030,12 +4128,6 @@ function escapeAttribute(value) {
 /* =========================================
    INITIALIZE
 ========================================= */
-
-/*
-  Start these immediately.
-  Branding is fetched from D1, while the
-  splash timer continues independently.
-*/
 
 loadPublicBranding();
 
