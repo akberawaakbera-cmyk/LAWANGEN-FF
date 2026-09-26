@@ -28,11 +28,7 @@ function corsHeaders(request) {
 
 async function sha256(value) {
   const data = new TextEncoder().encode(String(value));
-
-  const hash = await crypto.subtle.digest(
-    "SHA-256",
-    data
-  );
+  const hash = await crypto.subtle.digest("SHA-256", data);
 
   return [...new Uint8Array(hash)]
     .map(b => b.toString(16).padStart(2, "0"))
@@ -41,13 +37,10 @@ async function sha256(value) {
 
 function randomString(length = 32) {
   const bytes = new Uint8Array(length);
-
   crypto.getRandomValues(bytes);
 
   return [...bytes]
-    .map(b =>
-      b.toString(16).padStart(2, "0")
-    )
+    .map(b => b.toString(16).padStart(2, "0"))
     .join("");
 }
 
@@ -56,20 +49,15 @@ function makeKey(prefix = "RK") {
 }
 
 function getCookie(request, name) {
-  const cookie =
-    request.headers.get("Cookie") || "";
+  const cookie = request.headers.get("Cookie") || "";
 
   const found = cookie
     .split(";")
     .map(x => x.trim())
-    .find(
-      x => x.startsWith(`${name}=`)
-    );
+    .find(x => x.startsWith(`${name}=`));
 
   return found
-    ? decodeURIComponent(
-        found.substring(name.length + 1)
-      )
+    ? decodeURIComponent(found.substring(name.length + 1))
     : null;
 }
 
@@ -119,16 +107,15 @@ function clearDeveloperSessionCookie() {
 
 function futureDate(days) {
   const d = new Date();
-
   const safeDays = Number(days || 30);
 
   d.setDate(
     d.getDate() +
-    (
-      Number.isFinite(safeDays) && safeDays > 0
-        ? safeDays
-        : 30
-    )
+      (
+        Number.isFinite(safeDays) && safeDays > 0
+          ? safeDays
+          : 30
+      )
   );
 
   return d.toISOString();
@@ -137,10 +124,7 @@ function futureDate(days) {
 function isExpired(date) {
   if (!date) return false;
 
-  return (
-    new Date(date).getTime() <=
-    Date.now()
-  );
+  return new Date(date).getTime() <= Date.now();
 }
 
 function normalizeDays(value, fallback = 30) {
@@ -161,7 +145,14 @@ function normalizeDays(value, fallback = 30) {
    LOGO VALIDATION
 ========================================= */
 
-const MAX_LOGO_DATA_LENGTH = 6_000_000;
+/*
+  4 MB original image normally becomes roughly
+  5.3–5.7 MB after base64 encoding.
+
+  Therefore backend character limit is larger than
+  4 MB so valid 4 MB images are not rejected.
+*/
+const MAX_LOGO_DATA_LENGTH = 7_500_000;
 
 function validLogoData(value) {
   if (!value) return true;
@@ -202,26 +193,24 @@ async function requireAdmin(request, env) {
     };
   }
 
-  const tokenHash =
-    await sha256(token);
+  const tokenHash = await sha256(token);
 
-  const session =
-    await env.DB.prepare(`
-      SELECT
-        s.id AS session_id,
-        s.admin_id,
-        s.expires_at,
-        a.name,
-        a.status,
-        a.expires_at AS admin_expires_at
-      FROM admin_sessions s
-      JOIN reseller_admins a
-        ON a.id = s.admin_id
-      WHERE s.session_token_hash = ?
-      LIMIT 1
-    `)
-      .bind(tokenHash)
-      .first();
+  const session = await env.DB.prepare(`
+    SELECT
+      s.id AS session_id,
+      s.admin_id,
+      s.expires_at,
+      a.name,
+      a.status,
+      a.expires_at AS admin_expires_at
+    FROM admin_sessions s
+    JOIN reseller_admins a
+      ON a.id = s.admin_id
+    WHERE s.session_token_hash = ?
+    LIMIT 1
+  `)
+    .bind(tokenHash)
+    .first();
 
   if (!session) {
     return {
@@ -278,11 +267,7 @@ async function requireAdmin(request, env) {
     };
   }
 
-  if (
-    isExpired(
-      session.admin_expires_at
-    )
-  ) {
+  if (isExpired(session.admin_expires_at)) {
     return {
       error: json(
         {
@@ -308,10 +293,7 @@ async function requireAdmin(request, env) {
    DEVELOPER AUTH
 ========================================= */
 
-async function requireDeveloper(
-  request,
-  env
-) {
+async function requireDeveloper(request, env) {
   const token = getCookie(
     request,
     "lawangen_developer_session"
@@ -330,20 +312,18 @@ async function requireDeveloper(
     };
   }
 
-  const tokenHash =
-    await sha256(token);
+  const tokenHash = await sha256(token);
 
-  const session =
-    await env.DB.prepare(`
-      SELECT
-        id,
-        expires_at
-      FROM developer_sessions
-      WHERE session_token_hash = ?
-      LIMIT 1
-    `)
-      .bind(tokenHash)
-      .first();
+  const session = await env.DB.prepare(`
+    SELECT
+      id,
+      expires_at
+    FROM developer_sessions
+    WHERE session_token_hash = ?
+    LIMIT 1
+  `)
+    .bind(tokenHash)
+    .first();
 
   if (!session) {
     return {
@@ -362,11 +342,7 @@ async function requireDeveloper(
     };
   }
 
-  if (
-    isExpired(
-      session.expires_at
-    )
-  ) {
+  if (isExpired(session.expires_at)) {
     await env.DB.prepare(`
       DELETE FROM developer_sessions
       WHERE id = ?
@@ -434,8 +410,6 @@ async function logActivity(
 
 async function ensureTables(env) {
 
-  /* ---------- BRANDING ---------- */
-
   await env.DB.prepare(`
     CREATE TABLE IF NOT EXISTS branding (
       id INTEGER PRIMARY KEY CHECK (id = 1),
@@ -464,8 +438,6 @@ async function ensureTables(env) {
   `).run();
 
 
-  /* ---------- DEVELOPER SESSIONS ---------- */
-
   await env.DB.prepare(`
     CREATE TABLE IF NOT EXISTS developer_sessions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -475,8 +447,6 @@ async function ensureTables(env) {
     )
   `).run();
 
-
-  /* ---------- ADMINS ---------- */
 
   await env.DB.prepare(`
     CREATE TABLE IF NOT EXISTS reseller_admins (
@@ -490,8 +460,6 @@ async function ensureTables(env) {
   `).run();
 
 
-  /* ---------- ADMIN SESSIONS ---------- */
-
   await env.DB.prepare(`
     CREATE TABLE IF NOT EXISTS admin_sessions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -502,8 +470,6 @@ async function ensureTables(env) {
     )
   `).run();
 
-
-  /* ---------- USER KEYS ---------- */
 
   await env.DB.prepare(`
     CREATE TABLE IF NOT EXISTS reseller_keys (
@@ -518,8 +484,6 @@ async function ensureTables(env) {
   `).run();
 
 
-  /* ---------- USERS ---------- */
-
   await env.DB.prepare(`
     CREATE TABLE IF NOT EXISTS reseller_users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -532,8 +496,6 @@ async function ensureTables(env) {
   `).run();
 
 
-  /* ---------- SERVICES ---------- */
-
   await env.DB.prepare(`
     CREATE TABLE IF NOT EXISTS services (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -544,8 +506,6 @@ async function ensureTables(env) {
   `).run();
 
 
-  /* ---------- SERVICE LOGOS ---------- */
-
   await env.DB.prepare(`
     CREATE TABLE IF NOT EXISTS service_logos (
       service_id INTEGER PRIMARY KEY,
@@ -554,8 +514,6 @@ async function ensureTables(env) {
     )
   `).run();
 
-
-  /* ---------- ACTIVITY ---------- */
 
   await env.DB.prepare(`
     CREATE TABLE IF NOT EXISTS activity_logs (
@@ -567,8 +525,6 @@ async function ensureTables(env) {
     )
   `).run();
 
-
-  /* ---------- DEFAULT SERVICES ---------- */
 
   const defaultServices = [
     "Free Fire",
@@ -603,19 +559,11 @@ async function ensureTables(env) {
    REQUEST
 ========================================= */
 
-async function handleRequest(
-  request,
-  env
-) {
+async function handleRequest(request, env) {
 
-  const url =
-    new URL(request.url);
-
-  const path =
-    url.pathname;
-
-  const method =
-    request.method;
+  const url = new URL(request.url);
+  const path = url.pathname;
+  const method = request.method;
 
 
   /* ---------- CORS ---------- */
@@ -623,8 +571,7 @@ async function handleRequest(
   if (method === "OPTIONS") {
     return new Response(null, {
       status: 204,
-      headers:
-        corsHeaders(request)
+      headers: corsHeaders(request)
     });
   }
 
@@ -712,18 +659,14 @@ async function handleRequest(
         );
       }
 
-
       const sessionToken =
         randomString(48);
 
       const sessionHash =
-        await sha256(
-          sessionToken
-        );
+        await sha256(sessionToken);
 
       const expiresAt =
         futureDate(7);
-
 
       await env.DB.prepare(`
         INSERT INTO developer_sessions
@@ -738,7 +681,6 @@ async function handleRequest(
           expiresAt
         )
         .run();
-
 
       return json(
         {
@@ -774,7 +716,6 @@ async function handleRequest(
 
       if (auth.error)
         return auth.error;
-
 
       return json(
         {
@@ -815,7 +756,6 @@ async function handleRequest(
           .run();
       }
 
-
       return json(
         {
           success: true
@@ -849,7 +789,6 @@ async function handleRequest(
       if (auth.error)
         return auth.error;
 
-
       let body = {};
 
       try {
@@ -859,20 +798,17 @@ async function handleRequest(
         body = {};
       }
 
-
       const name =
         String(
           body.name ||
           "ROKHAN SYED"
         ).trim();
 
-
       const days =
         normalizeDays(
           body.days,
           30
         );
-
 
       if (!name) {
         return json(
@@ -886,18 +822,14 @@ async function handleRequest(
         );
       }
 
-
       const adminKey =
         makeKey("ADMIN");
 
       const adminKeyHash =
-        await sha256(
-          adminKey
-        );
+        await sha256(adminKey);
 
       const expiresAt =
         futureDate(days);
-
 
       const result =
         await env.DB.prepare(`
@@ -922,7 +854,6 @@ async function handleRequest(
             expiresAt
           )
           .first();
-
 
       return json(
         {
@@ -955,7 +886,6 @@ async function handleRequest(
       if (auth.error)
         return auth.error;
 
-
       const result =
         await env.DB.prepare(`
           SELECT
@@ -968,7 +898,6 @@ async function handleRequest(
           ORDER BY id DESC
         `)
           .all();
-
 
       return json(
         {
@@ -991,7 +920,6 @@ async function handleRequest(
         /^\/api\/developer\/admins\/(\d+)\/revoke$/
       );
 
-
     if (
       revokeAdminMatch &&
       method === "POST"
@@ -1006,12 +934,10 @@ async function handleRequest(
       if (auth.error)
         return auth.error;
 
-
       const adminId =
         Number(
           revokeAdminMatch[1]
         );
-
 
       const result =
         await env.DB.prepare(`
@@ -1022,14 +948,12 @@ async function handleRequest(
           .bind(adminId)
           .run();
 
-
       await env.DB.prepare(`
         DELETE FROM admin_sessions
         WHERE admin_id = ?
       `)
         .bind(adminId)
         .run();
-
 
       return json(
         {
@@ -1052,7 +976,6 @@ async function handleRequest(
         /^\/api\/developer\/admins\/(\d+)\/activate$/
       );
 
-
     if (
       activateAdminMatch &&
       method === "POST"
@@ -1067,12 +990,10 @@ async function handleRequest(
       if (auth.error)
         return auth.error;
 
-
       const adminId =
         Number(
           activateAdminMatch[1]
         );
-
 
       const admin =
         await env.DB.prepare(`
@@ -1087,7 +1008,6 @@ async function handleRequest(
           .bind(adminId)
           .first();
 
-
       if (!admin) {
         return json(
           {
@@ -1100,12 +1020,7 @@ async function handleRequest(
         );
       }
 
-
-      if (
-        isExpired(
-          admin.expires_at
-        )
-      ) {
+      if (isExpired(admin.expires_at)) {
         return json(
           {
             success: false,
@@ -1117,7 +1032,6 @@ async function handleRequest(
         );
       }
 
-
       await env.DB.prepare(`
         UPDATE reseller_admins
         SET status = 'active'
@@ -1125,7 +1039,6 @@ async function handleRequest(
       `)
         .bind(adminId)
         .run();
-
 
       return json(
         {
@@ -1156,7 +1069,6 @@ async function handleRequest(
       if (auth.error)
         return auth.error;
 
-
       const result =
         await env.DB.prepare(`
           SELECT
@@ -1172,7 +1084,6 @@ async function handleRequest(
           ORDER BY s.id DESC
         `)
           .all();
-
 
       return json(
         {
@@ -1205,7 +1116,6 @@ async function handleRequest(
       if (auth.error)
         return auth.error;
 
-
       let body = {};
 
       try {
@@ -1215,24 +1125,20 @@ async function handleRequest(
         body = {};
       }
 
-
       const name =
         String(
           body.name || ""
         ).trim();
-
 
       const status =
         body.status === "inactive"
           ? "inactive"
           : "active";
 
-
       const logoData =
         body.logo_data
           ? String(body.logo_data)
           : null;
-
 
       if (!name) {
         return json(
@@ -1246,7 +1152,6 @@ async function handleRequest(
         );
       }
 
-
       if (
         logoData &&
         !validLogoData(logoData)
@@ -1255,13 +1160,12 @@ async function handleRequest(
           {
             success: false,
             error:
-              "Invalid or oversized game logo"
+              "Invalid or oversized game logo. Maximum supported original image size is 4 MB."
           },
           400,
           corsHeaders(request)
         );
       }
-
 
       try {
 
@@ -1282,7 +1186,6 @@ async function handleRequest(
             )
             .first();
 
-
         if (logoData) {
           await env.DB.prepare(`
             INSERT INTO service_logos
@@ -1299,7 +1202,6 @@ async function handleRequest(
             )
             .run();
         }
-
 
         return json(
           {
@@ -1338,7 +1240,6 @@ async function handleRequest(
         /^\/api\/developer\/services\/(\d+)$/
       );
 
-
     if (
       developerServiceMatch &&
       method === "PUT"
@@ -1353,12 +1254,10 @@ async function handleRequest(
       if (auth.error)
         return auth.error;
 
-
       const serviceId =
         Number(
           developerServiceMatch[1]
         );
-
 
       let body = {};
 
@@ -1368,7 +1267,6 @@ async function handleRequest(
       } catch {
         body = {};
       }
-
 
       const existing =
         await env.DB.prepare(`
@@ -1383,7 +1281,6 @@ async function handleRequest(
           .bind(serviceId)
           .first();
 
-
       if (!existing) {
         return json(
           {
@@ -1396,12 +1293,10 @@ async function handleRequest(
         );
       }
 
-
       const name =
         body.name !== undefined
           ? String(body.name).trim()
           : existing.name;
-
 
       const status =
         body.status !== undefined
@@ -1411,7 +1306,6 @@ async function handleRequest(
                 : "active"
             )
           : existing.status;
-
 
       if (!name) {
         return json(
@@ -1425,7 +1319,6 @@ async function handleRequest(
         );
       }
 
-
       if (
         body.logo_data !== undefined &&
         body.logo_data !== null &&
@@ -1438,13 +1331,12 @@ async function handleRequest(
           {
             success: false,
             error:
-              "Invalid or oversized game logo"
+              "Invalid or oversized game logo. Maximum supported original image size is 4 MB."
           },
           400,
           corsHeaders(request)
         );
       }
-
 
       try {
 
@@ -1475,21 +1367,6 @@ async function handleRequest(
         );
       }
 
-
-      /*
-        logo_data omitted:
-        keep existing logo.
-
-        logo_data = "":
-        remove logo.
-
-        logo_data = null:
-        remove logo.
-
-        logo_data = data:image/...:
-        replace logo.
-      */
-
       if (
         body.logo_data !== undefined
       ) {
@@ -1498,7 +1375,6 @@ async function handleRequest(
           body.logo_data
             ? String(body.logo_data)
             : null;
-
 
         if (logo) {
 
@@ -1532,7 +1408,6 @@ async function handleRequest(
         }
       }
 
-
       const updated =
         await env.DB.prepare(`
           SELECT
@@ -1550,7 +1425,6 @@ async function handleRequest(
         `)
           .bind(serviceId)
           .first();
-
 
       return json(
         {
@@ -1581,12 +1455,10 @@ async function handleRequest(
       if (auth.error)
         return auth.error;
 
-
       const serviceId =
         Number(
           developerServiceMatch[1]
         );
-
 
       const service =
         await env.DB.prepare(`
@@ -1600,7 +1472,6 @@ async function handleRequest(
           .bind(serviceId)
           .first();
 
-
       if (!service) {
         return json(
           {
@@ -1613,24 +1484,12 @@ async function handleRequest(
         );
       }
 
-
-      /*
-        Remove the game's logo first.
-      */
-
       await env.DB.prepare(`
         DELETE FROM service_logos
         WHERE service_id = ?
       `)
         .bind(serviceId)
         .run();
-
-
-      /*
-        We keep old reseller keys untouched.
-        This prevents historical key records
-        from being destroyed.
-      */
 
       await env.DB.prepare(`
         DELETE FROM services
@@ -1639,11 +1498,373 @@ async function handleRequest(
         .bind(serviceId)
         .run();
 
-
       return json(
         {
           success: true,
           deleted: service
+        },
+        200,
+        corsHeaders(request)
+      );
+    }
+
+
+    /* =====================================
+       DEVELOPER USER KEY - CREATE
+       =====================================
+       Developer can generate customer/user keys.
+
+       Since reseller_keys.admin_id is required,
+       the generated key is attached to the newest
+       active Admin account.
+
+       No database migration is required.
+    ===================================== */
+
+    if (
+      path === "/api/developer/keys" &&
+      method === "POST"
+    ) {
+
+      const auth =
+        await requireDeveloper(
+          request,
+          env
+        );
+
+      if (auth.error)
+        return auth.error;
+
+      let body = {};
+
+      try {
+        body =
+          await request.json();
+      } catch {
+        body = {};
+      }
+
+      const service =
+        String(
+          body.service ||
+          "General"
+        ).trim();
+
+      const days =
+        normalizeDays(
+          body.days,
+          30
+        );
+
+      if (!service) {
+        return json(
+          {
+            success: false,
+            error:
+              "Game / service is required"
+          },
+          400,
+          corsHeaders(request)
+        );
+      }
+
+      const serviceExists =
+        await env.DB.prepare(`
+          SELECT
+            id,
+            name,
+            status
+          FROM services
+          WHERE name = ?
+          LIMIT 1
+        `)
+          .bind(service)
+          .first();
+
+      if (!serviceExists) {
+        return json(
+          {
+            success: false,
+            error:
+              "Game / service not found"
+          },
+          404,
+          corsHeaders(request)
+        );
+      }
+
+      if (
+        serviceExists.status !==
+        "active"
+      ) {
+        return json(
+          {
+            success: false,
+            error:
+              "Game / service is inactive"
+          },
+          403,
+          corsHeaders(request)
+        );
+      }
+
+      const ownerAdmin =
+        await env.DB.prepare(`
+          SELECT
+            id,
+            name,
+            status,
+            expires_at
+          FROM reseller_admins
+          WHERE status = 'active'
+          AND expires_at > CURRENT_TIMESTAMP
+          ORDER BY id DESC
+          LIMIT 1
+        `)
+          .first();
+
+      if (!ownerAdmin) {
+        return json(
+          {
+            success: false,
+            error:
+              "No active Admin account exists. Create an Admin Key first."
+          },
+          409,
+          corsHeaders(request)
+        );
+      }
+
+      const apiKey =
+        makeKey("USER");
+
+      const expiresAt =
+        futureDate(days);
+
+      const result =
+        await env.DB.prepare(`
+          INSERT INTO reseller_keys
+            (
+              admin_id,
+              api_key,
+              service,
+              status,
+              expires_at
+            )
+          VALUES (?, ?, ?, 'active', ?)
+          RETURNING
+            id,
+            admin_id,
+            api_key,
+            service,
+            status,
+            expires_at,
+            created_at
+        `)
+          .bind(
+            ownerAdmin.id,
+            apiKey,
+            service,
+            expiresAt
+          )
+          .first();
+
+      await logActivity(
+        env,
+        ownerAdmin.id,
+        "DEVELOPER_KEY_GENERATED",
+        `Developer generated User Key. Service: ${service}`
+      );
+
+      return json(
+        {
+          success: true,
+          key: result,
+          generated_by: "developer",
+          owner_admin: {
+            id: ownerAdmin.id,
+            name: ownerAdmin.name
+          }
+        },
+        201,
+        corsHeaders(request)
+      );
+    }
+
+
+    /* =====================================
+       DEVELOPER USER KEYS - LIST ALL
+    ===================================== */
+
+    if (
+      path === "/api/developer/keys" &&
+      method === "GET"
+    ) {
+
+      const auth =
+        await requireDeveloper(
+          request,
+          env
+        );
+
+      if (auth.error)
+        return auth.error;
+
+      const result =
+        await env.DB.prepare(`
+          SELECT
+            k.id,
+            k.admin_id,
+            k.api_key,
+            k.service,
+            k.status,
+            k.expires_at,
+            k.created_at,
+            a.name AS admin_name
+          FROM reseller_keys k
+          LEFT JOIN reseller_admins a
+            ON a.id = k.admin_id
+          ORDER BY k.id DESC
+        `)
+          .all();
+
+      return json(
+        {
+          success: true,
+          keys:
+            result.results || []
+        },
+        200,
+        corsHeaders(request)
+      );
+    }
+
+
+    /* =====================================
+       DEVELOPER USER KEY - REVOKE
+    ===================================== */
+
+    const developerRevokeKeyMatch =
+      path.match(
+        /^\/api\/developer\/keys\/(\d+)\/revoke$/
+      );
+
+    if (
+      developerRevokeKeyMatch &&
+      method === "POST"
+    ) {
+
+      const auth =
+        await requireDeveloper(
+          request,
+          env
+        );
+
+      if (auth.error)
+        return auth.error;
+
+      const id =
+        Number(
+          developerRevokeKeyMatch[1]
+        );
+
+      const result =
+        await env.DB.prepare(`
+          UPDATE reseller_keys
+          SET status = 'revoked'
+          WHERE id = ?
+        `)
+          .bind(id)
+          .run();
+
+      return json(
+        {
+          success: true,
+          changed:
+            result.meta?.changes || 0
+        },
+        200,
+        corsHeaders(request)
+      );
+    }
+
+
+    /* =====================================
+       DEVELOPER USER KEY - ACTIVATE
+    ===================================== */
+
+    const developerActivateKeyMatch =
+      path.match(
+        /^\/api\/developer\/keys\/(\d+)\/activate$/
+      );
+
+    if (
+      developerActivateKeyMatch &&
+      method === "POST"
+    ) {
+
+      const auth =
+        await requireDeveloper(
+          request,
+          env
+        );
+
+      if (auth.error)
+        return auth.error;
+
+      const id =
+        Number(
+          developerActivateKeyMatch[1]
+        );
+
+      const key =
+        await env.DB.prepare(`
+          SELECT
+            id,
+            expires_at,
+            status
+          FROM reseller_keys
+          WHERE id = ?
+          LIMIT 1
+        `)
+          .bind(id)
+          .first();
+
+      if (!key) {
+        return json(
+          {
+            success: false,
+            error:
+              "Key not found"
+          },
+          404,
+          corsHeaders(request)
+        );
+      }
+
+      if (isExpired(key.expires_at)) {
+        return json(
+          {
+            success: false,
+            error:
+              "Key has expired"
+          },
+          403,
+          corsHeaders(request)
+        );
+      }
+
+      await env.DB.prepare(`
+        UPDATE reseller_keys
+        SET status = 'active'
+        WHERE id = ?
+      `)
+        .bind(id)
+        .run();
+
+      return json(
+        {
+          success: true
         },
         200,
         corsHeaders(request)
@@ -1669,12 +1890,10 @@ async function handleRequest(
         body = {};
       }
 
-
       const adminKey =
         String(
           body.admin_key || ""
         ).trim();
-
 
       if (!adminKey) {
         return json(
@@ -1688,12 +1907,8 @@ async function handleRequest(
         );
       }
 
-
       const keyHash =
-        await sha256(
-          adminKey
-        );
-
+        await sha256(adminKey);
 
       const admin =
         await env.DB.prepare(`
@@ -1709,7 +1924,6 @@ async function handleRequest(
           .bind(keyHash)
           .first();
 
-
       if (!admin) {
         return json(
           {
@@ -1721,7 +1935,6 @@ async function handleRequest(
           corsHeaders(request)
         );
       }
-
 
       if (
         admin.status !==
@@ -1737,7 +1950,6 @@ async function handleRequest(
           corsHeaders(request)
         );
       }
-
 
       if (
         isExpired(
@@ -1755,18 +1967,14 @@ async function handleRequest(
         );
       }
 
-
       const sessionToken =
         randomString(48);
 
       const sessionHash =
-        await sha256(
-          sessionToken
-        );
+        await sha256(sessionToken);
 
       const sessionExpiry =
         futureDate(7);
-
 
       await env.DB.prepare(`
         INSERT INTO admin_sessions
@@ -1784,14 +1992,12 @@ async function handleRequest(
         )
         .run();
 
-
       await logActivity(
         env,
         admin.id,
         "LOGIN",
         "Admin login successful"
       );
-
 
       return json(
         {
@@ -1830,12 +2036,10 @@ async function handleRequest(
           "rokhan_session"
         );
 
-
       if (token) {
 
         const hash =
           await sha256(token);
-
 
         const session =
           await env.DB.prepare(`
@@ -1847,7 +2051,6 @@ async function handleRequest(
             .bind(hash)
             .first();
 
-
         if (session) {
           await logActivity(
             env,
@@ -1857,7 +2060,6 @@ async function handleRequest(
           );
         }
 
-
         await env.DB.prepare(`
           DELETE FROM admin_sessions
           WHERE session_token_hash = ?
@@ -1865,7 +2067,6 @@ async function handleRequest(
           .bind(hash)
           .run();
       }
-
 
       return json(
         {
@@ -1898,7 +2099,6 @@ async function handleRequest(
 
       if (auth.error)
         return auth.error;
-
 
       return json(
         {
@@ -1937,10 +2137,8 @@ async function handleRequest(
       if (auth.error)
         return auth.error;
 
-
       const adminId =
         auth.admin.admin_id;
-
 
       const keys =
         await env.DB.prepare(`
@@ -1950,7 +2148,6 @@ async function handleRequest(
         `)
           .bind(adminId)
           .first();
-
 
       const activeKeys =
         await env.DB.prepare(`
@@ -1965,7 +2162,6 @@ async function handleRequest(
         `)
           .bind(adminId)
           .first();
-
 
       const expiredKeys =
         await env.DB.prepare(`
@@ -1983,7 +2179,6 @@ async function handleRequest(
           .bind(adminId)
           .first();
 
-
       const users =
         await env.DB.prepare(`
           SELECT COUNT(*) AS total
@@ -1993,7 +2188,6 @@ async function handleRequest(
           .bind(adminId)
           .first();
 
-
       const services =
         await env.DB.prepare(`
           SELECT COUNT(*) AS total
@@ -2001,7 +2195,6 @@ async function handleRequest(
           WHERE status = 'active'
         `)
           .first();
-
 
       const activity =
         await env.DB.prepare(`
@@ -2016,7 +2209,6 @@ async function handleRequest(
         `)
           .bind(adminId)
           .all();
-
 
       return json(
         {
@@ -2058,7 +2250,7 @@ async function handleRequest(
 
 
     /* =====================================
-       USER KEYS - CREATE
+       ADMIN USER KEYS - CREATE
        ADMIN ONLY
     ===================================== */
 
@@ -2076,7 +2268,6 @@ async function handleRequest(
       if (auth.error)
         return auth.error;
 
-
       let body = {};
 
       try {
@@ -2086,13 +2277,11 @@ async function handleRequest(
         body = {};
       }
 
-
       const service =
         String(
           body.service ||
           "General"
         ).trim();
-
 
       const days =
         normalizeDays(
@@ -2100,14 +2289,48 @@ async function handleRequest(
           30
         );
 
+      const serviceExists =
+        await env.DB.prepare(`
+          SELECT id, name, status
+          FROM services
+          WHERE name = ?
+          LIMIT 1
+        `)
+          .bind(service)
+          .first();
+
+      if (!serviceExists) {
+        return json(
+          {
+            success: false,
+            error:
+              "Game / service not found"
+          },
+          404,
+          corsHeaders(request)
+        );
+      }
+
+      if (
+        serviceExists.status !==
+        "active"
+      ) {
+        return json(
+          {
+            success: false,
+            error:
+              "Game / service is inactive"
+          },
+          403,
+          corsHeaders(request)
+        );
+      }
 
       const apiKey =
         makeKey("USER");
 
-
       const expiresAt =
         futureDate(days);
-
 
       const result =
         await env.DB.prepare(`
@@ -2136,14 +2359,12 @@ async function handleRequest(
           )
           .first();
 
-
       await logActivity(
         env,
         auth.admin.admin_id,
         "KEY_GENERATED",
         `Service: ${service}`
       );
-
 
       return json(
         {
@@ -2157,7 +2378,7 @@ async function handleRequest(
 
 
     /* =====================================
-       USER KEYS - LIST
+       ADMIN USER KEYS - LIST
     ===================================== */
 
     if (
@@ -2173,7 +2394,6 @@ async function handleRequest(
 
       if (auth.error)
         return auth.error;
-
 
       const result =
         await env.DB.prepare(`
@@ -2193,7 +2413,6 @@ async function handleRequest(
           )
           .all();
 
-
       return json(
         {
           success: true,
@@ -2207,14 +2426,13 @@ async function handleRequest(
 
 
     /* =====================================
-       USER KEY REVOKE
+       ADMIN USER KEY - REVOKE
     ===================================== */
 
     const revokeMatch =
       path.match(
         /^\/api\/admin\/keys\/(\d+)\/revoke$/
       );
-
 
     if (
       revokeMatch &&
@@ -2230,12 +2448,10 @@ async function handleRequest(
       if (auth.error)
         return auth.error;
 
-
       const id =
         Number(
           revokeMatch[1]
         );
-
 
       const result =
         await env.DB.prepare(`
@@ -2250,14 +2466,12 @@ async function handleRequest(
           )
           .run();
 
-
       await logActivity(
         env,
         auth.admin.admin_id,
         "KEY_REVOKED",
         `Key ID: ${id}`
       );
-
 
       return json(
         {
@@ -2272,14 +2486,13 @@ async function handleRequest(
 
 
     /* =====================================
-       USER KEY ACTIVATE
+       ADMIN USER KEY - ACTIVATE
     ===================================== */
 
     const activateMatch =
       path.match(
         /^\/api\/admin\/keys\/(\d+)\/activate$/
       );
-
 
     if (
       activateMatch &&
@@ -2295,12 +2508,10 @@ async function handleRequest(
       if (auth.error)
         return auth.error;
 
-
       const id =
         Number(
           activateMatch[1]
         );
-
 
       const key =
         await env.DB.prepare(`
@@ -2319,7 +2530,6 @@ async function handleRequest(
           )
           .first();
 
-
       if (!key) {
         return json(
           {
@@ -2331,7 +2541,6 @@ async function handleRequest(
           corsHeaders(request)
         );
       }
-
 
       if (
         isExpired(
@@ -2349,7 +2558,6 @@ async function handleRequest(
         );
       }
 
-
       await env.DB.prepare(`
         UPDATE reseller_keys
         SET status = 'active'
@@ -2362,14 +2570,12 @@ async function handleRequest(
         )
         .run();
 
-
       await logActivity(
         env,
         auth.admin.admin_id,
         "KEY_ACTIVATED",
         `Key ID: ${id}`
       );
-
 
       return json(
         {
@@ -2399,7 +2605,6 @@ async function handleRequest(
       if (auth.error)
         return auth.error;
 
-
       const result =
         await env.DB.prepare(`
           SELECT
@@ -2420,7 +2625,6 @@ async function handleRequest(
             auth.admin.admin_id
           )
           .all();
-
 
       return json(
         {
@@ -2452,7 +2656,6 @@ async function handleRequest(
       if (auth.error)
         return auth.error;
 
-
       let body = {};
 
       try {
@@ -2462,18 +2665,15 @@ async function handleRequest(
         body = {};
       }
 
-
       const name =
         String(
           body.name || ""
         ).trim();
 
-
       const keyId =
         body.key_id
           ? Number(body.key_id)
           : null;
-
 
       if (!name) {
         return json(
@@ -2486,7 +2686,6 @@ async function handleRequest(
           corsHeaders(request)
         );
       }
-
 
       if (keyId) {
 
@@ -2504,7 +2703,6 @@ async function handleRequest(
             )
             .first();
 
-
         if (!key) {
           return json(
             {
@@ -2517,7 +2715,6 @@ async function handleRequest(
           );
         }
       }
-
 
       const result =
         await env.DB.prepare(`
@@ -2543,14 +2740,12 @@ async function handleRequest(
           )
           .first();
 
-
       await logActivity(
         env,
         auth.admin.admin_id,
         "USER_ADDED",
         `User: ${name}`
       );
-
 
       return json(
         {
@@ -2564,8 +2759,7 @@ async function handleRequest(
 
 
     /* =====================================
-       ADMIN SERVICES - LIST
-       ADMIN READ ONLY
+       ADMIN SERVICES - READ ONLY
     ===================================== */
 
     if (
@@ -2583,7 +2777,6 @@ async function handleRequest(
       if (auth.error)
         return auth.error;
 
-
       const result =
         await env.DB.prepare(`
           SELECT
@@ -2600,7 +2793,6 @@ async function handleRequest(
         `)
           .all();
 
-
       return json(
         {
           success: true,
@@ -2615,7 +2807,6 @@ async function handleRequest(
 
     /* =====================================
        ADMIN SERVICES - WRITE BLOCKED
-       ADMIN CANNOT CREATE GAMES
     ===================================== */
 
     if (
@@ -2643,7 +2834,6 @@ async function handleRequest(
 
     /* =====================================
        BRANDING GET
-       PUBLIC
     ===================================== */
 
     if (
@@ -2665,7 +2855,6 @@ async function handleRequest(
           LIMIT 1
         `)
           .first();
-
 
       return json(
         {
@@ -2708,7 +2897,6 @@ async function handleRequest(
       if (auth.error)
         return auth.error;
 
-
       let body = {};
 
       try {
@@ -2718,14 +2906,12 @@ async function handleRequest(
         body = {};
       }
 
-
       const developerLabel =
         body.developer_label !== undefined
           ? String(
               body.developer_label || ""
             ).trim()
           : "DEVELOPER";
-
 
       const developerName =
         body.developer_name !== undefined
@@ -2734,7 +2920,6 @@ async function handleRequest(
             ).trim()
           : "LAWANGEN";
 
-
       const adminName =
         body.admin_name !== undefined
           ? String(
@@ -2742,26 +2927,11 @@ async function handleRequest(
             ).trim()
           : "ROKHAN SYED";
 
-
-      /*
-        Important:
-
-        If logo_data is omitted,
-        existing logo is preserved.
-
-        If logo_data is "",
-        logo is removed.
-
-        If logo_data contains a data:image,
-        logo is permanently replaced.
-      */
-
       const hasLogoField =
         Object.prototype.hasOwnProperty.call(
           body,
           "logo_data"
         );
-
 
       if (hasLogoField) {
 
@@ -2769,7 +2939,6 @@ async function handleRequest(
           body.logo_data
             ? String(body.logo_data)
             : "";
-
 
         if (
           logoData &&
@@ -2785,7 +2954,6 @@ async function handleRequest(
             corsHeaders(request)
           );
         }
-
 
         await env.DB.prepare(`
           UPDATE branding
@@ -2824,7 +2992,6 @@ async function handleRequest(
           .run();
       }
 
-
       return json(
         {
           success: true
@@ -2837,7 +3004,6 @@ async function handleRequest(
 
     /* =====================================
        ACTIVITY
-       ADMIN ONLY
     ===================================== */
 
     if (
@@ -2855,7 +3021,6 @@ async function handleRequest(
       if (auth.error)
         return auth.error;
 
-
       const result =
         await env.DB.prepare(`
           SELECT
@@ -2871,7 +3036,6 @@ async function handleRequest(
             auth.admin.admin_id
           )
           .all();
-
 
       return json(
         {
@@ -2906,10 +3070,7 @@ async function handleRequest(
         );
       }
 
-
-      return env.ASSETS.fetch(
-        request
-      );
+      return env.ASSETS.fetch(request);
     }
 
 
@@ -2954,17 +3115,10 @@ async function handleRequest(
 ========================================= */
 
 export default {
-
-  async fetch(
-    request,
-    env
-  ) {
-
+  async fetch(request, env) {
     return handleRequest(
       request,
       env
     );
-
   }
-
 };
