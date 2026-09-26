@@ -4,11 +4,13 @@ const state = {
   mode: "admin",
   admin: null,
   developer: false,
+
   dashboard: null,
   keys: [],
   users: [],
   services: [],
   activity: [],
+
   branding: {
     developer_label: "DEVELOPER",
     developer_name: "LAWANGEN",
@@ -19,27 +21,38 @@ const state = {
 
 
 /* =========================================
+   ELEMENT HELPER
+========================================= */
+
+const $ = id => document.getElementById(id);
+
+
+/* =========================================
    ELEMENTS
 ========================================= */
 
-const $ = (id) => document.getElementById(id);
-
 const splash = $("splash");
+
 const loginScreen = $("loginScreen");
+const adminLoginForm = $("adminLoginForm");
 const developerLoginScreen = $("developerLoginScreen");
+
 const appScreen = $("appScreen");
+
+const adminAccessButton = $("adminAccessButton");
+const developerLoginButton = $("developerLoginButton");
+const backToAccess = $("backToAccess");
+const backToAdminLogin = $("backToAdminLogin");
 
 const adminKey = $("adminKey");
 const loginButton = $("loginButton");
 const loginMessage = $("loginMessage");
 const showKey = $("showKey");
 
-const developerLoginButton = $("developerLoginButton");
 const developerToken = $("developerToken");
 const developerEnterButton = $("developerEnterButton");
 const developerLoginMessage = $("developerLoginMessage");
 const showDeveloperToken = $("showDeveloperToken");
-const backToAdminLogin = $("backToAdminLogin");
 
 const keyModal = $("keyModal");
 const closeModal = $("closeModal");
@@ -69,6 +82,7 @@ const activityList = $("activityList");
 const gameSelect = $("gameSelect");
 
 const developerTools = $("developerTools");
+
 const selectLogoButton = $("selectLogoButton");
 const logoFileInput = $("logoFileInput");
 const removeLogoButton = $("removeLogoButton");
@@ -83,7 +97,8 @@ const copyAdminKeyButton = $("copyAdminKeyButton");
    LOCAL LOGO
 ========================================= */
 
-const savedLogo = localStorage.getItem("lawangenLogo");
+const savedLogo =
+  localStorage.getItem("lawangenLogo");
 
 if (savedLogo) {
   applyLogoToUI(savedLogo);
@@ -91,16 +106,104 @@ if (savedLogo) {
 
 
 /* =========================================
-   SPLASH
+   SPLASH CONTROL
 ========================================= */
 
-setTimeout(() => {
+let splashFinished = false;
 
-  splash.classList.add("hidden");
+function finishSplash() {
+
+  if (splashFinished) {
+    return;
+  }
+
+  splashFinished = true;
+
+  splash.classList.add("splash-exit");
+
+  setTimeout(() => {
+
+    splash.classList.add("hidden");
+
+    /*
+      Do not automatically show a login form.
+      The user first sees the Access screen.
+    */
+
+    showAccessScreen();
+
+  }, 650);
+
+}
+
+
+/*
+  6.2 second professional startup.
+
+  The splash is the only visible screen
+  during this period.
+*/
+
+setTimeout(
+  finishSplash,
+  6200
+);
+
+
+/* =========================================
+   SCREEN CONTROL
+========================================= */
+
+function hideAllEntryScreens() {
+
+  loginScreen.classList.add("hidden");
+
+  adminLoginForm.classList.add("hidden");
+
+  developerLoginScreen.classList.add("hidden");
+
+}
+
+
+function showAccessScreen() {
+
+  hideAllEntryScreens();
+
+  appScreen.classList.add("hidden");
 
   loginScreen.classList.remove("hidden");
 
-}, 7000);
+}
+
+
+function showAdminLogin() {
+
+  hideAllEntryScreens();
+
+  appScreen.classList.add("hidden");
+
+  adminLoginForm.classList.remove("hidden");
+
+  setTimeout(() => {
+    adminKey?.focus();
+  }, 250);
+
+}
+
+
+function showDeveloperLogin() {
+
+  hideAllEntryScreens();
+
+  appScreen.classList.add("hidden");
+
+  developerLoginScreen.classList.remove("hidden");
+
+  setTimeout(() => {
+    developerToken?.focus();
+  }, 250);
+
+}
 
 
 /* =========================================
@@ -109,7 +212,10 @@ setTimeout(() => {
 
 function playSound(type = "click") {
 
-  if (!soundToggle || !soundToggle.checked) {
+  if (
+    !soundToggle ||
+    !soundToggle.checked
+  ) {
     return;
   }
 
@@ -119,7 +225,12 @@ function playSound(type = "click") {
       window.AudioContext ||
       window.webkitAudioContext;
 
-    const audio = new AudioContext();
+    if (!AudioContext) {
+      return;
+    }
+
+    const audio =
+      new AudioContext();
 
     const oscillator =
       audio.createOscillator();
@@ -131,11 +242,17 @@ function playSound(type = "click") {
     gain.connect(audio.destination);
 
     if (type === "success") {
+
       oscillator.frequency.value = 720;
+
     } else if (type === "error") {
+
       oscillator.frequency.value = 180;
+
     } else {
+
       oscillator.frequency.value = 430;
+
     }
 
     gain.gain.setValueAtTime(
@@ -154,9 +271,13 @@ function playSound(type = "click") {
     );
 
     oscillator.start();
-    oscillator.stop(audio.currentTime + 0.11);
+
+    oscillator.stop(
+      audio.currentTime + 0.11
+    );
 
   } catch {}
+
 }
 
 
@@ -164,19 +285,26 @@ function playSound(type = "click") {
    API
 ========================================= */
 
-async function api(path, options = {}) {
+async function api(
+  path,
+  options = {}
+) {
 
-  const response = await fetch(
-    API_BASE + path,
-    {
-      credentials: "include",
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...(options.headers || {})
+  const response =
+    await fetch(
+      API_BASE + path,
+      {
+        credentials: "include",
+        ...options,
+
+        headers: {
+          "Content-Type":
+            "application/json",
+
+          ...(options.headers || {})
+        }
       }
-    }
-  );
+    );
 
   let data = {};
 
@@ -185,14 +313,17 @@ async function api(path, options = {}) {
   } catch {}
 
   if (!response.ok) {
+
     throw new Error(
       data.error ||
       data.message ||
       `Request failed (${response.status})`
     );
+
   }
 
   return data;
+
 }
 
 
@@ -205,16 +336,22 @@ async function loadPublicBranding() {
   try {
 
     const result =
-      await api("/api/admin/branding");
+      await api(
+        "/api/admin/branding"
+      );
 
-    if (result.branding) {
+    if (
+      result.branding
+    ) {
 
       state.branding = {
         ...state.branding,
         ...result.branding
       };
 
-      if (state.branding.logo_data) {
+      if (
+        state.branding.logo_data
+      ) {
 
         localStorage.setItem(
           "lawangenLogo",
@@ -243,11 +380,14 @@ async function loadPublicBranding() {
 
 function applyLogoToUI(logo) {
 
-  if (!logo) return;
+  if (!logo) {
+    return;
+  }
 
   const ids = [
     "splashLogo",
     "loginLogo",
+    "adminFormLogo",
     "developerLoginLogo"
   ];
 
@@ -255,7 +395,9 @@ function applyLogoToUI(logo) {
 
     const element = $(id);
 
-    if (!element) return;
+    if (!element) {
+      return;
+    }
 
     element.innerHTML = "";
 
@@ -263,7 +405,9 @@ function applyLogoToUI(logo) {
       document.createElement("img");
 
     img.src = logo;
-    img.alt = "LAWANGEN Logo";
+
+    img.alt =
+      "LAWANGEN Logo";
 
     element.appendChild(img);
 
@@ -273,27 +417,98 @@ function applyLogoToUI(logo) {
 
 
 /* =========================================
-   ADMIN LOGIN
+   ACCESS OPTIONS
 ========================================= */
 
-showKey.addEventListener("click", () => {
+adminAccessButton.addEventListener(
+  "click",
+  () => {
 
-  playSound();
+    playSound();
 
-  if (adminKey.type === "password") {
-
-    adminKey.type = "text";
-    showKey.textContent = "○";
-
-  } else {
-
-    adminKey.type = "password";
-    showKey.textContent = "◉";
+    showAdminLogin();
 
   }
+);
 
-});
 
+developerLoginButton.addEventListener(
+  "click",
+  () => {
+
+    playSound();
+
+    showDeveloperLogin();
+
+  }
+);
+
+
+backToAccess.addEventListener(
+  "click",
+  () => {
+
+    playSound();
+
+    adminKey.value = "";
+
+    loginMessage.textContent = "";
+
+    showAccessScreen();
+
+  }
+);
+
+
+backToAdminLogin.addEventListener(
+  "click",
+  () => {
+
+    playSound();
+
+    developerToken.value = "";
+
+    developerLoginMessage.textContent = "";
+
+    showAccessScreen();
+
+  }
+);
+
+
+/* =========================================
+   ADMIN KEY VISIBILITY
+========================================= */
+
+showKey.addEventListener(
+  "click",
+  () => {
+
+    playSound();
+
+    if (
+      adminKey.type === "password"
+    ) {
+
+      adminKey.type = "text";
+
+      showKey.textContent = "○";
+
+    } else {
+
+      adminKey.type = "password";
+
+      showKey.textContent = "◉";
+
+    }
+
+  }
+);
+
+
+/* =========================================
+   ADMIN LOGIN
+========================================= */
 
 loginButton.addEventListener(
   "click",
@@ -305,8 +520,12 @@ adminKey.addEventListener(
   "keydown",
   event => {
 
-    if (event.key === "Enter") {
+    if (
+      event.key === "Enter"
+    ) {
+
       login();
+
     }
 
   }
@@ -326,12 +545,18 @@ async function login() {
     playSound("error");
 
     return;
+
   }
 
   loginButton.disabled = true;
 
-  loginButton.querySelector("span").textContent =
-    "VERIFYING...";
+  const buttonText =
+    loginButton.querySelector("span");
+
+  if (buttonText) {
+    buttonText.textContent =
+      "VERIFYING...";
+  }
 
   try {
 
@@ -340,6 +565,7 @@ async function login() {
         "/api/admin/login",
         {
           method: "POST",
+
           body: JSON.stringify({
             admin_key: entered
           })
@@ -347,14 +573,19 @@ async function login() {
       );
 
     if (!result.success) {
+
       throw new Error(
         result.error ||
         "Login failed."
       );
+
     }
 
     state.mode = "admin";
-    state.admin = result.admin;
+
+    state.admin =
+      result.admin;
+
     state.developer = false;
 
     loginMessage.textContent =
@@ -381,8 +612,12 @@ async function login() {
 
     loginButton.disabled = false;
 
-    loginButton.querySelector("span").textContent =
-      "ENTER ADMIN PANEL";
+    if (buttonText) {
+
+      buttonText.textContent =
+        "ENTER ADMIN PANEL";
+
+    }
 
   }
 
@@ -390,40 +625,8 @@ async function login() {
 
 
 /* =========================================
-   DEVELOPER LOGIN SCREEN
+   DEVELOPER TOKEN VISIBILITY
 ========================================= */
-
-developerLoginButton.addEventListener(
-  "click",
-  () => {
-
-    playSound();
-
-    loginScreen.classList.add("hidden");
-
-    developerLoginScreen.classList.remove("hidden");
-
-    developerToken.focus();
-
-  }
-);
-
-
-backToAdminLogin.addEventListener(
-  "click",
-  () => {
-
-    playSound();
-
-    developerLoginScreen.classList.add("hidden");
-
-    loginScreen.classList.remove("hidden");
-
-    developerLoginMessage.textContent = "";
-
-  }
-);
-
 
 showDeveloperToken.addEventListener(
   "click",
@@ -436,18 +639,26 @@ showDeveloperToken.addEventListener(
     ) {
 
       developerToken.type = "text";
-      showDeveloperToken.textContent = "○";
+
+      showDeveloperToken.textContent =
+        "○";
 
     } else {
 
       developerToken.type = "password";
-      showDeveloperToken.textContent = "◉";
+
+      showDeveloperToken.textContent =
+        "◉";
 
     }
 
   }
 );
 
+
+/* =========================================
+   DEVELOPER LOGIN
+========================================= */
 
 developerEnterButton.addEventListener(
   "click",
@@ -459,8 +670,12 @@ developerToken.addEventListener(
   "keydown",
   event => {
 
-    if (event.key === "Enter") {
+    if (
+      event.key === "Enter"
+    ) {
+
       developerLogin();
+
     }
 
   }
@@ -485,8 +700,17 @@ async function developerLogin() {
 
   developerEnterButton.disabled = true;
 
-  developerEnterButton.querySelector("span").textContent =
-    "VERIFYING...";
+  const buttonText =
+    developerEnterButton.querySelector(
+      "span"
+    );
+
+  if (buttonText) {
+
+    buttonText.textContent =
+      "VERIFYING...";
+
+  }
 
   try {
 
@@ -495,21 +719,27 @@ async function developerLogin() {
         "/api/developer/login",
         {
           method: "POST",
+
           headers: {
-            "X-Developer-Token": token
+            "X-Developer-Token":
+              token
           }
         }
       );
 
     if (!result.success) {
+
       throw new Error(
         result.error ||
         "Developer access denied."
       );
+
     }
 
     state.mode = "developer";
+
     state.developer = true;
+
     state.admin = null;
 
     developerLoginMessage.textContent =
@@ -535,8 +765,12 @@ async function developerLogin() {
 
     developerEnterButton.disabled = false;
 
-    developerEnterButton.querySelector("span").textContent =
-      "ENTER DEVELOPER PANEL";
+    if (buttonText) {
+
+      buttonText.textContent =
+        "ENTER DEVELOPER PANEL";
+
+    }
 
   }
 
@@ -552,17 +786,28 @@ async function openAdminPanel() {
   try {
 
     const me =
-      await api("/api/admin/me");
+      await api(
+        "/api/admin/me"
+      );
 
     if (!me.success) {
-      throw new Error("Session expired.");
+
+      throw new Error(
+        "Session expired."
+      );
+
     }
 
-    state.admin = me.admin;
+    state.admin =
+      me.admin;
+
     state.mode = "admin";
+
     state.developer = false;
 
-    developerTools.classList.add("hidden");
+    developerTools.classList.add(
+      "hidden"
+    );
 
     $("topRole").textContent =
       "RESELLER CONTROL";
@@ -573,9 +818,11 @@ async function openAdminPanel() {
     $("homeDescription").textContent =
       "Admin control center";
 
-    loginScreen.classList.add("hidden");
-    developerLoginScreen.classList.add("hidden");
-    appScreen.classList.remove("hidden");
+    hideAllEntryScreens();
+
+    appScreen.classList.remove(
+      "hidden"
+    );
 
     updateAdminIdentity();
 
@@ -585,12 +832,15 @@ async function openAdminPanel() {
 
   } catch (error) {
 
+    appScreen.classList.add(
+      "hidden"
+    );
+
+    showAdminLogin();
+
     loginMessage.textContent =
       error.message ||
       "Unable to open admin panel.";
-
-    appScreen.classList.add("hidden");
-    loginScreen.classList.remove("hidden");
 
   }
 
@@ -606,16 +856,25 @@ async function openDeveloperPanel() {
   try {
 
     const result =
-      await api("/api/developer/me");
+      await api(
+        "/api/developer/me"
+      );
 
     if (!result.success) {
-      throw new Error("Developer session expired.");
+
+      throw new Error(
+        "Developer session expired."
+      );
+
     }
 
     state.mode = "developer";
+
     state.developer = true;
 
-    developerTools.classList.remove("hidden");
+    developerTools.classList.remove(
+      "hidden"
+    );
 
     $("topRole").textContent =
       "DEVELOPER CONTROL";
@@ -626,25 +885,41 @@ async function openDeveloperPanel() {
     $("homeDescription").textContent =
       "Developer control center";
 
-    document.querySelector(".welcome h1").innerHTML =
-      "LAWANGEN <span>DEVELOPER</span>";
+    const welcome =
+      document.querySelector(
+        ".welcome h1"
+      );
 
-    loginScreen.classList.add("hidden");
-    developerLoginScreen.classList.add("hidden");
-    appScreen.classList.remove("hidden");
+    if (welcome) {
+
+      welcome.innerHTML =
+        "LAWANGEN <span>DEVELOPER</span>";
+
+    }
+
+    hideAllEntryScreens();
+
+    appScreen.classList.remove(
+      "hidden"
+    );
 
     await loadPublicBranding();
 
-    switchPage("settingsPage");
+    switchPage(
+      "settingsPage"
+    );
 
   } catch (error) {
+
+    appScreen.classList.add(
+      "hidden"
+    );
+
+    showDeveloperLogin();
 
     developerLoginMessage.textContent =
       error.message ||
       "Developer session expired.";
-
-    appScreen.classList.add("hidden");
-    developerLoginScreen.classList.remove("hidden");
 
   }
 
@@ -652,18 +927,25 @@ async function openDeveloperPanel() {
 
 
 /* =========================================
-   LOAD ALL ADMIN DATA
+   LOAD ADMIN DATA
 ========================================= */
 
 async function loadAll() {
 
   await Promise.allSettled([
+
     loadDashboard(),
+
     loadKeys(),
+
     loadUsers(),
+
     loadServices(),
+
     loadActivity(),
+
     loadPublicBranding()
+
   ]);
 
 }
@@ -680,7 +962,9 @@ function updateAdminIdentity() {
     "ROKHAN SYED";
 
   const welcome =
-    document.querySelector(".welcome h1");
+    document.querySelector(
+      ".welcome h1"
+    );
 
   if (welcome) {
 
@@ -688,18 +972,44 @@ function updateAdminIdentity() {
       name.split(" ");
 
     welcome.innerHTML =
-      `${escapeHTML(parts[0] || "")}
-       <span>
-       ${escapeHTML(parts.slice(1).join(" "))}
-       </span>`;
+      `${escapeHTML(
+        parts[0] || ""
+      )}
+      <span>
+        ${escapeHTML(
+          parts
+            .slice(1)
+            .join(" ")
+        )}
+      </span>`;
 
   }
 
   const profileName =
-    document.querySelector(".profile-name");
+    document.querySelector(
+      ".profile-name"
+    );
 
   if (profileName) {
-    profileName.textContent = name;
+
+    profileName.textContent =
+      name;
+
+  }
+
+  const profileAvatar =
+    $("profileAvatar");
+
+  if (profileAvatar) {
+
+    profileAvatar.textContent =
+      name
+        .split(" ")
+        .map(word => word[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase();
+
   }
 
 }
@@ -714,11 +1024,16 @@ async function loadDashboard() {
   try {
 
     const result =
-      await api("/api/admin/dashboard");
+      await api(
+        "/api/admin/dashboard"
+      );
 
-    if (!result.success) return;
+    if (!result.success) {
+      return;
+    }
 
-    state.dashboard = result;
+    state.dashboard =
+      result;
 
     activeKeys.textContent =
       result.stats?.active_keys ?? 0;
@@ -754,7 +1069,9 @@ async function loadKeys() {
   try {
 
     const result =
-      await api("/api/admin/keys");
+      await api(
+        "/api/admin/keys"
+      );
 
     state.keys =
       result.keys || [];
@@ -784,6 +1101,7 @@ function renderKeys(filter = "") {
     state.keys.filter(item => {
 
       return (
+
         String(
           item.api_key || ""
         )
@@ -797,6 +1115,7 @@ function renderKeys(filter = "") {
         )
         .toLowerCase()
         .includes(search)
+
       );
 
     });
@@ -807,19 +1126,27 @@ function renderKeys(filter = "") {
 
     keyList.innerHTML = `
       <div class="key-card glass">
-        <div style="text-align:center;color:#777">
+        <div style="
+          text-align:center;
+          color:#777;
+          padding:20px;
+        ">
           No keys found
         </div>
       </div>
     `;
 
     return;
+
   }
+
 
   filtered.forEach(item => {
 
     const card =
-      document.createElement("div");
+      document.createElement(
+        "div"
+      );
 
     card.className =
       "key-card glass";
@@ -849,7 +1176,9 @@ function renderKeys(filter = "") {
         </span>
 
         <span class="badge ${escapeHTML(status)}">
-          ${escapeHTML(status.toUpperCase())}
+          ${escapeHTML(
+            status.toUpperCase()
+          )}
         </span>
 
       </div>
@@ -910,7 +1239,9 @@ function renderKeys(filter = "") {
 function attachKeyActions() {
 
   document
-    .querySelectorAll(".copy-button")
+    .querySelectorAll(
+      ".copy-button"
+    )
     .forEach(button => {
 
       button.addEventListener(
@@ -927,7 +1258,10 @@ function attachKeyActions() {
               "COPIED ✓";
 
             setTimeout(() => {
-              button.textContent = "COPY";
+
+              button.textContent =
+                "COPY";
+
             }, 1000);
 
           } catch {}
@@ -939,28 +1273,34 @@ function attachKeyActions() {
 
 
   document
-    .querySelectorAll(".revoke")
+    .querySelectorAll(
+      ".revoke"
+    )
     .forEach(button => {
 
       button.addEventListener(
         "click",
-        () => revokeKey(
-          button.dataset.id
-        )
+        () =>
+          revokeKey(
+            button.dataset.id
+          )
       );
 
     });
 
 
   document
-    .querySelectorAll(".activate")
+    .querySelectorAll(
+      ".activate"
+    )
     .forEach(button => {
 
       button.addEventListener(
         "click",
-        () => activateKey(
-          button.dataset.id
-        )
+        () =>
+          activateKey(
+            button.dataset.id
+          )
       );
 
     });
@@ -970,7 +1310,9 @@ function attachKeyActions() {
 
 async function revokeKey(id) {
 
-  if (!id) return;
+  if (!id) {
+    return;
+  }
 
   try {
 
@@ -984,6 +1326,7 @@ async function revokeKey(id) {
     playSound("success");
 
     await loadKeys();
+
     await loadDashboard();
 
   } catch (error) {
@@ -1002,7 +1345,9 @@ async function revokeKey(id) {
 
 async function activateKey(id) {
 
-  if (!id) return;
+  if (!id) {
+    return;
+  }
 
   try {
 
@@ -1016,6 +1361,7 @@ async function activateKey(id) {
     playSound("success");
 
     await loadKeys();
+
     await loadDashboard();
 
   } catch (error) {
@@ -1035,7 +1381,11 @@ async function activateKey(id) {
 keySearch.addEventListener(
   "input",
   event => {
-    renderKeys(event.target.value);
+
+    renderKeys(
+      event.target.value
+    );
+
   }
 );
 
@@ -1049,7 +1399,9 @@ async function loadUsers() {
   try {
 
     const result =
-      await api("/api/admin/users");
+      await api(
+        "/api/admin/users"
+      );
 
     state.users =
       result.users || [];
@@ -1073,12 +1425,16 @@ function renderUsers() {
   userList.innerHTML = "";
 
   let active = 0;
+
   let expired = 0;
+
 
   state.users.forEach(user => {
 
     const card =
-      document.createElement("div");
+      document.createElement(
+        "div"
+      );
 
     card.className =
       "user-card glass";
@@ -1096,7 +1452,8 @@ function renderUsers() {
       );
 
     const isActive =
-      rawStatus.toLowerCase() ===
+      rawStatus
+        .toLowerCase() ===
       "active";
 
     if (isActive) {
@@ -1140,11 +1497,13 @@ function renderUsers() {
           rawStatus.toUpperCase()
         )}
       </span>
+
     `;
 
     userList.appendChild(card);
 
   });
+
 
   userCount.textContent =
     state.users.length;
@@ -1167,12 +1526,15 @@ async function loadServices() {
   try {
 
     const result =
-      await api("/api/admin/services");
+      await api(
+        "/api/admin/services"
+      );
 
     state.services =
       result.services || [];
 
     renderServices();
+
     populateGameSelect();
 
   } catch (error) {
@@ -1203,13 +1565,17 @@ function renderServices() {
     `;
 
     return;
+
   }
+
 
   state.services.forEach(
     (service, index) => {
 
       const card =
-        document.createElement("div");
+        document.createElement(
+          "div"
+        );
 
       card.className =
         "game-card glass";
@@ -1227,7 +1593,9 @@ function renderServices() {
 
         <div class="game-logo">
           ${escapeHTML(
-            name.slice(0, 2).toUpperCase()
+            name
+              .slice(0, 2)
+              .toUpperCase()
           )}
         </div>
 
@@ -1244,11 +1612,13 @@ function renderServices() {
         </div>
 
         <span class="status-dot ${
-          status.toLowerCase()
+          status
+            .toLowerCase()
             .includes("maint")
             ? "maintenance"
             : ""
         }"></span>
+
       `;
 
       gameList.appendChild(card);
@@ -1266,32 +1636,44 @@ function populateGameSelect() {
   if (!state.services.length) {
 
     const option =
-      document.createElement("option");
+      document.createElement(
+        "option"
+      );
 
     option.value = "";
+
     option.textContent =
       "No services available";
 
-    gameSelect.appendChild(option);
+    gameSelect.appendChild(
+      option
+    );
 
     return;
 
   }
 
-  state.services.forEach(service => {
 
-    const option =
-      document.createElement("option");
+  state.services.forEach(
+    service => {
 
-    option.value =
-      service.name;
+      const option =
+        document.createElement(
+          "option"
+        );
 
-    option.textContent =
-      service.name;
+      option.value =
+        service.name;
 
-    gameSelect.appendChild(option);
+      option.textContent =
+        service.name;
 
-  });
+      gameSelect.appendChild(
+        option
+      );
+
+    }
+  );
 
 }
 
@@ -1317,8 +1699,11 @@ async function createKey() {
     );
 
   if (!service) {
+
     playSound("error");
+
     return;
+
   }
 
   createKeyButton.disabled = true;
@@ -1330,6 +1715,7 @@ async function createKey() {
         "/api/admin/keys",
         {
           method: "POST",
+
           body: JSON.stringify({
             service,
             days
@@ -1338,20 +1724,26 @@ async function createKey() {
       );
 
     if (!result.success) {
+
       throw new Error(
         result.error ||
         "Key creation failed."
       );
+
     }
 
     playSound("success");
 
     closeKeyModal();
 
-    switchPage("keysPage");
+    switchPage(
+      "keysPage"
+    );
 
     await loadKeys();
+
     await loadUsers();
+
     await loadDashboard();
 
   } catch (error) {
@@ -1381,7 +1773,9 @@ async function loadActivity() {
   try {
 
     const result =
-      await api("/api/admin/activity");
+      await api(
+        "/api/admin/activity"
+      );
 
     state.activity =
       result.activity || [];
@@ -1416,25 +1810,33 @@ function renderActivity(items) {
         </div>
 
         <div>
-          <strong>No activity yet</strong>
+
+          <strong>
+            No activity yet
+          </strong>
 
           <small>
             Your activity will appear here
           </small>
+
         </div>
 
       </div>
     `;
 
     return;
+
   }
+
 
   items
     .slice(0, 8)
     .forEach(item => {
 
       const activity =
-        document.createElement("div");
+        document.createElement(
+          "div"
+        );
 
       activity.className =
         "activity";
@@ -1449,17 +1851,21 @@ function renderActivity(items) {
 
           <strong>
             ${escapeHTML(
-              item.action || "Activity"
+              item.action ||
+              "Activity"
             )}
           </strong>
 
           <small>
             ${escapeHTML(
-              formatDate(item.created_at)
+              formatDate(
+                item.created_at
+              )
             )}
           </small>
 
         </div>
+
       `;
 
       activityList.appendChild(
@@ -1493,7 +1899,8 @@ async function createAdminKey() {
 
   }
 
-  createAdminKeyButton.disabled = true;
+  createAdminKeyButton.disabled =
+    true;
 
   createAdminKeyButton.textContent =
     "WAIT...";
@@ -1505,6 +1912,7 @@ async function createAdminKey() {
         "/api/developer/create-admin",
         {
           method: "POST",
+
           body: JSON.stringify({
             name: "ROKHAN SYED",
             days: 30
@@ -1513,10 +1921,12 @@ async function createAdminKey() {
       );
 
     if (!result.success) {
+
       throw new Error(
         result.error ||
         "Unable to create Admin Key."
       );
+
     }
 
     newAdminKey.textContent =
@@ -1539,7 +1949,8 @@ async function createAdminKey() {
 
   } finally {
 
-    createAdminKeyButton.disabled = false;
+    createAdminKeyButton.disabled =
+      false;
 
     createAdminKeyButton.textContent =
       "CREATE";
@@ -1549,6 +1960,10 @@ async function createAdminKey() {
 }
 
 
+/* =========================================
+   COPY ADMIN KEY
+========================================= */
+
 copyAdminKeyButton.addEventListener(
   "click",
   async () => {
@@ -1556,11 +1971,15 @@ copyAdminKeyButton.addEventListener(
     const key =
       newAdminKey.textContent.trim();
 
-    if (!key) return;
+    if (!key) {
+      return;
+    }
 
     try {
 
-      await navigator.clipboard.writeText(key);
+      await navigator.clipboard.writeText(
+        key
+      );
 
       copyAdminKeyButton.textContent =
         "COPIED ✓";
@@ -1608,14 +2027,21 @@ logoFileInput.addEventListener(
   "change",
   async event => {
 
-    if (!state.developer) return;
+    if (!state.developer) {
+      return;
+    }
 
     const file =
       event.target.files?.[0];
 
-    if (!file) return;
+    if (!file) {
+      return;
+    }
 
-    if (file.size > 1000 * 1024) {
+    if (
+      file.size >
+      1000 * 1024
+    ) {
 
       alert(
         "Please select a logo smaller than 1 MB."
@@ -1630,12 +2056,15 @@ logoFileInput.addEventListener(
     try {
 
       const data =
-        await fileToDataURL(file);
+        await fileToDataURL(
+          file
+        );
 
       await api(
         "/api/admin/branding",
         {
           method: "PUT",
+
           body: JSON.stringify({
             logo_data: data
           })
@@ -1669,6 +2098,10 @@ logoFileInput.addEventListener(
 );
 
 
+/* =========================================
+   REMOVE LOGO
+========================================= */
+
 removeLogoButton.addEventListener(
   "click",
   async () => {
@@ -1689,6 +2122,7 @@ removeLogoButton.addEventListener(
         "/api/admin/branding",
         {
           method: "PUT",
+
           body: JSON.stringify({
             logo_data: ""
           })
@@ -1721,10 +2155,15 @@ removeLogoButton.addEventListener(
 ========================================= */
 
 const navItems =
-  document.querySelectorAll(".nav-item");
+  document.querySelectorAll(
+    ".nav-item"
+  );
 
 const pages =
-  document.querySelectorAll(".page");
+  document.querySelectorAll(
+    ".page"
+  );
+
 
 navItems.forEach(item => {
 
@@ -1747,19 +2186,34 @@ navItems.forEach(item => {
 function switchPage(pageId) {
 
   pages.forEach(page => {
-    page.classList.remove("active");
+
+    page.classList.remove(
+      "active"
+    );
+
   });
 
+
   navItems.forEach(nav => {
-    nav.classList.remove("active");
+
+    nav.classList.remove(
+      "active"
+    );
+
   });
+
 
   const page =
     $(pageId);
 
   if (page) {
-    page.classList.add("active");
+
+    page.classList.add(
+      "active"
+    );
+
   }
+
 
   const activeNav =
     document.querySelector(
@@ -1767,7 +2221,11 @@ function switchPage(pageId) {
     );
 
   if (activeNav) {
-    activeNav.classList.add("active");
+
+    activeNav.classList.add(
+      "active"
+    );
+
   }
 
 }
@@ -1783,7 +2241,9 @@ $("viewKeys").addEventListener(
 
     playSound();
 
-    switchPage("keysPage");
+    switchPage(
+      "keysPage"
+    );
 
   }
 );
@@ -1797,6 +2257,7 @@ generateKeyButton.addEventListener(
   "click",
   openKeyModal
 );
+
 
 generateFromHome.addEventListener(
   "click",
@@ -1822,7 +2283,9 @@ closeModal.addEventListener(
 
 
 document
-  .querySelector(".modal-backdrop")
+  .querySelector(
+    ".modal-backdrop"
+  )
   .addEventListener(
     "click",
     closeKeyModal
@@ -1848,8 +2311,14 @@ soundToggle.addEventListener(
   "change",
   () => {
 
-    if (soundToggle.checked) {
-      playSound("success");
+    if (
+      soundToggle.checked
+    ) {
+
+      playSound(
+        "success"
+      );
+
     }
 
   }
@@ -1860,7 +2329,9 @@ animationToggle.addEventListener(
   "change",
   () => {
 
-    if (!animationToggle.checked) {
+    if (
+      !animationToggle.checked
+    ) {
 
       document
         .querySelectorAll("*")
@@ -1885,6 +2356,24 @@ animationToggle.addEventListener(
 
 
 /* =========================================
+   PROFILE BUTTON
+========================================= */
+
+$("profileButton").addEventListener(
+  "click",
+  () => {
+
+    playSound();
+
+    switchPage(
+      "settingsPage"
+    );
+
+  }
+);
+
+
+/* =========================================
    LOGOUT
 ========================================= */
 
@@ -1896,7 +2385,10 @@ logoutButton.addEventListener(
 
     try {
 
-      if (state.mode === "developer") {
+      if (
+        state.mode ===
+        "developer"
+      ) {
 
         await api(
           "/api/developer/logout",
@@ -1919,24 +2411,28 @@ logoutButton.addEventListener(
     } catch {}
 
     state.mode = "admin";
+
     state.admin = null;
+
     state.developer = false;
 
-    appScreen.classList.add("hidden");
+    appScreen.classList.add(
+      "hidden"
+    );
 
-    developerLoginScreen.classList.add("hidden");
-
-    loginScreen.classList.remove("hidden");
+    developerTools.classList.add(
+      "hidden"
+    );
 
     adminKey.value = "";
+
     developerToken.value = "";
 
     loginMessage.textContent = "";
+
     developerLoginMessage.textContent = "";
 
-    developerTools.classList.add("hidden");
-
-    switchPage("homePage");
+    showAccessScreen();
 
   }
 );
@@ -1947,6 +2443,14 @@ logoutButton.addEventListener(
 ========================================= */
 
 async function checkExistingSession() {
+
+  /*
+    Important:
+    Do not open any screen while splash
+    is still running.
+  */
+
+  let existingMode = null;
 
   try {
 
@@ -1960,41 +2464,161 @@ async function checkExistingSession() {
       developer.developer
     ) {
 
-      state.mode = "developer";
-      state.developer = true;
-
-      await openDeveloperPanel();
-
-      return;
+      existingMode =
+        "developer";
 
     }
 
   } catch {}
 
 
-  try {
+  if (!existingMode) {
 
-    const admin =
-      await api(
-        "/api/admin/me"
-      );
+    try {
 
-    if (
-      admin.success &&
-      admin.admin
-    ) {
+      const admin =
+        await api(
+          "/api/admin/me"
+        );
 
-      state.mode = "admin";
-      state.admin =
-        admin.admin;
+      if (
+        admin.success &&
+        admin.admin
+      ) {
 
-      await openAdminPanel();
+        existingMode =
+          "admin";
 
-    }
+        state.admin =
+          admin.admin;
 
-  } catch {}
+      }
+
+    } catch {}
+
+  }
+
+
+  /*
+    Store the session result.
+    It will be opened only after splash.
+  */
+
+  if (
+    existingMode ===
+    "developer"
+  ) {
+
+    state.mode =
+      "developer";
+
+    state.developer =
+      true;
+
+    state.admin =
+      null;
+
+    state.hasExistingSession =
+      true;
+
+    state.existingSession =
+      "developer";
+
+    return;
+
+  }
+
+
+  if (
+    existingMode ===
+    "admin"
+  ) {
+
+    state.mode =
+      "admin";
+
+    state.developer =
+      false;
+
+    state.hasExistingSession =
+      true;
+
+    state.existingSession =
+      "admin";
+
+    return;
+
+  }
+
+
+  state.hasExistingSession =
+    false;
+
+  state.existingSession =
+    null;
 
 }
+
+
+/*
+  After splash is finished:
+  - existing developer session → developer panel
+  - existing admin session → admin panel
+  - no session → access screen
+*/
+
+const originalFinishSplash =
+  finishSplash;
+
+
+finishSplash = function () {
+
+  if (splashFinished) {
+    return;
+  }
+
+  splashFinished = true;
+
+  splash.classList.add(
+    "splash-exit"
+  );
+
+  setTimeout(
+    async () => {
+
+      splash.classList.add(
+        "hidden"
+      );
+
+      if (
+        state.existingSession ===
+        "developer"
+      ) {
+
+        await openDeveloperPanel();
+
+        return;
+
+      }
+
+      if (
+        state.existingSession ===
+        "admin"
+      ) {
+
+        await openAdminPanel();
+
+        return;
+
+      }
+
+      showAccessScreen();
+
+    },
+    650
+  );
+
+};
 
 
 /* =========================================
@@ -2015,7 +2639,9 @@ function formatExpiry(value) {
       date.getTime()
     )
   ) {
+
     return String(value);
+
   }
 
   const diff =
@@ -2023,7 +2649,9 @@ function formatExpiry(value) {
     Date.now();
 
   if (diff <= 0) {
+
     return "Expired";
+
   }
 
   const days =
@@ -2032,7 +2660,10 @@ function formatExpiry(value) {
       (1000 * 60 * 60 * 24)
     );
 
-  return `${days} day${days === 1 ? "" : "s"}`;
+  return `
+    ${days}
+    day${days === 1 ? "" : "s"}
+  `.trim();
 
 }
 
@@ -2051,7 +2682,9 @@ function formatDate(value) {
       date.getTime()
     )
   ) {
+
     return String(value);
+
   }
 
   return date.toLocaleString(
@@ -2081,7 +2714,9 @@ function fileToDataURL(file) {
       reader.onerror =
         reject;
 
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(
+        file
+      );
 
     }
   );
@@ -2094,11 +2729,26 @@ function escapeHTML(value) {
   return String(
     value ?? ""
   )
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+    .replaceAll(
+      "&",
+      "&amp;"
+    )
+    .replaceAll(
+      "<",
+      "&lt;"
+    )
+    .replaceAll(
+      ">",
+      "&gt;"
+    )
+    .replaceAll(
+      '"',
+      "&quot;"
+    )
+    .replaceAll(
+      "'",
+      "&#039;"
+    );
 
 }
 
@@ -2114,6 +2764,16 @@ function escapeAttribute(value) {
    INITIALIZE
 ========================================= */
 
+/*
+  Load branding immediately.
+*/
+
 loadPublicBranding();
+
+
+/*
+  Check session in background,
+  but do NOT show it until splash ends.
+*/
 
 checkExistingSession();
