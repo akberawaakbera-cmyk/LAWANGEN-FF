@@ -158,6 +158,29 @@ function normalizeDays(value, fallback = 30) {
 
 
 /* =========================================
+   LOGO VALIDATION
+========================================= */
+
+const MAX_LOGO_DATA_LENGTH = 6_000_000;
+
+function validLogoData(value) {
+  if (!value) return true;
+
+  const logo = String(value);
+
+  if (logo.length > MAX_LOGO_DATA_LENGTH) {
+    return false;
+  }
+
+  if (!logo.startsWith("data:image/")) {
+    return false;
+  }
+
+  return true;
+}
+
+
+/* =========================================
    ADMIN AUTH
 ========================================= */
 
@@ -521,6 +544,17 @@ async function ensureTables(env) {
   `).run();
 
 
+  /* ---------- SERVICE LOGOS ---------- */
+
+  await env.DB.prepare(`
+    CREATE TABLE IF NOT EXISTS service_logos (
+      service_id INTEGER PRIMARY KEY,
+      logo_data TEXT,
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `).run();
+
+
   /* ---------- ACTIVITY ---------- */
 
   await env.DB.prepare(`
@@ -538,6 +572,18 @@ async function ensureTables(env) {
 
   const defaultServices = [
     "Free Fire",
+    "PUBG MOBILE",
+    "Call of Duty: Mobile",
+    "8 Ball Pool",
+    "PUBG: New State",
+    "Mobile Legends: Bang Bang",
+    "Arena Breakout",
+    "Fortnite",
+    "Minecraft",
+    "Roblox",
+    "Apex Legends",
+    "League of Legends: Wild Rift",
+    "Valorant",
     "General"
   ];
 
@@ -786,7 +832,6 @@ async function handleRequest(
 
     /* =====================================
        DEVELOPER CREATE ADMIN KEY
-       DEVELOPER ONLY
     ===================================== */
 
     if (
@@ -879,15 +924,6 @@ async function handleRequest(
           .first();
 
 
-      /*
-        IMPORTANT:
-
-        The plain Admin Key is returned ONLY
-        in this Developer response.
-
-        It is NOT stored in plaintext in D1.
-      */
-
       return json(
         {
           success: true,
@@ -902,7 +938,6 @@ async function handleRequest(
 
     /* =====================================
        DEVELOPER LIST ADMINS
-       DEVELOPER ONLY
     ===================================== */
 
     if (
@@ -949,7 +984,6 @@ async function handleRequest(
 
     /* =====================================
        DEVELOPER REVOKE ADMIN
-       DEVELOPER ONLY
     ===================================== */
 
     const revokeAdminMatch =
@@ -989,11 +1023,6 @@ async function handleRequest(
           .run();
 
 
-      /*
-        Immediately destroy all active
-        sessions belonging to this admin.
-      */
-
       await env.DB.prepare(`
         DELETE FROM admin_sessions
         WHERE admin_id = ?
@@ -1016,7 +1045,6 @@ async function handleRequest(
 
     /* =====================================
        DEVELOPER ACTIVATE ADMIN
-       DEVELOPER ONLY
     ===================================== */
 
     const activateAdminMatch =
@@ -1102,6 +1130,520 @@ async function handleRequest(
       return json(
         {
           success: true
+        },
+        200,
+        corsHeaders(request)
+      );
+    }
+
+
+    /* =====================================
+       DEVELOPER SERVICES - LIST
+    ===================================== */
+
+    if (
+      path ===
+        "/api/developer/services" &&
+      method === "GET"
+    ) {
+
+      const auth =
+        await requireDeveloper(
+          request,
+          env
+        );
+
+      if (auth.error)
+        return auth.error;
+
+
+      const result =
+        await env.DB.prepare(`
+          SELECT
+            s.id,
+            s.name,
+            s.status,
+            s.created_at,
+            sl.logo_data,
+            sl.updated_at AS logo_updated_at
+          FROM services s
+          LEFT JOIN service_logos sl
+            ON sl.service_id = s.id
+          ORDER BY s.id DESC
+        `)
+          .all();
+
+
+      return json(
+        {
+          success: true,
+          services:
+            result.results || []
+        },
+        200,
+        corsHeaders(request)
+      );
+    }
+
+
+    /* =====================================
+       DEVELOPER SERVICES - CREATE
+    ===================================== */
+
+    if (
+      path ===
+        "/api/developer/services" &&
+      method === "POST"
+    ) {
+
+      const auth =
+        await requireDeveloper(
+          request,
+          env
+        );
+
+      if (auth.error)
+        return auth.error;
+
+
+      let body = {};
+
+      try {
+        body =
+          await request.json();
+      } catch {
+        body = {};
+      }
+
+
+      const name =
+        String(
+          body.name || ""
+        ).trim();
+
+
+      const status =
+        body.status === "inactive"
+          ? "inactive"
+          : "active";
+
+
+      const logoData =
+        body.logo_data
+          ? String(body.logo_data)
+          : null;
+
+
+      if (!name) {
+        return json(
+          {
+            success: false,
+            error:
+              "Game name is required"
+          },
+          400,
+          corsHeaders(request)
+        );
+      }
+
+
+      if (
+        logoData &&
+        !validLogoData(logoData)
+      ) {
+        return json(
+          {
+            success: false,
+            error:
+              "Invalid or oversized game logo"
+          },
+          400,
+          corsHeaders(request)
+        );
+      }
+
+
+      try {
+
+        const service =
+          await env.DB.prepare(`
+            INSERT INTO services
+              (name, status)
+            VALUES (?, ?)
+            RETURNING
+              id,
+              name,
+              status,
+              created_at
+          `)
+            .bind(
+              name,
+              status
+            )
+            .first();
+
+
+        if (logoData) {
+          await env.DB.prepare(`
+            INSERT INTO service_logos
+              (
+                service_id,
+                logo_data,
+                updated_at
+              )
+            VALUES (?, ?, CURRENT_TIMESTAMP)
+          `)
+            .bind(
+              service.id,
+              logoData
+            )
+            .run();
+        }
+
+
+        return json(
+          {
+            success: true,
+            service: {
+              ...service,
+              logo_data:
+                logoData
+            }
+          },
+          201,
+          corsHeaders(request)
+        );
+
+      } catch {
+
+        return json(
+          {
+            success: false,
+            error:
+              "Game already exists"
+          },
+          409,
+          corsHeaders(request)
+        );
+      }
+    }
+
+
+    /* =====================================
+       DEVELOPER SERVICES - UPDATE
+    ===================================== */
+
+    const developerServiceMatch =
+      path.match(
+        /^\/api\/developer\/services\/(\d+)$/
+      );
+
+
+    if (
+      developerServiceMatch &&
+      method === "PUT"
+    ) {
+
+      const auth =
+        await requireDeveloper(
+          request,
+          env
+        );
+
+      if (auth.error)
+        return auth.error;
+
+
+      const serviceId =
+        Number(
+          developerServiceMatch[1]
+        );
+
+
+      let body = {};
+
+      try {
+        body =
+          await request.json();
+      } catch {
+        body = {};
+      }
+
+
+      const existing =
+        await env.DB.prepare(`
+          SELECT
+            id,
+            name,
+            status
+          FROM services
+          WHERE id = ?
+          LIMIT 1
+        `)
+          .bind(serviceId)
+          .first();
+
+
+      if (!existing) {
+        return json(
+          {
+            success: false,
+            error:
+              "Game not found"
+          },
+          404,
+          corsHeaders(request)
+        );
+      }
+
+
+      const name =
+        body.name !== undefined
+          ? String(body.name).trim()
+          : existing.name;
+
+
+      const status =
+        body.status !== undefined
+          ? (
+              body.status === "inactive"
+                ? "inactive"
+                : "active"
+            )
+          : existing.status;
+
+
+      if (!name) {
+        return json(
+          {
+            success: false,
+            error:
+              "Game name is required"
+          },
+          400,
+          corsHeaders(request)
+        );
+      }
+
+
+      if (
+        body.logo_data !== undefined &&
+        body.logo_data !== null &&
+        body.logo_data !== "" &&
+        !validLogoData(
+          String(body.logo_data)
+        )
+      ) {
+        return json(
+          {
+            success: false,
+            error:
+              "Invalid or oversized game logo"
+          },
+          400,
+          corsHeaders(request)
+        );
+      }
+
+
+      try {
+
+        await env.DB.prepare(`
+          UPDATE services
+          SET
+            name = ?,
+            status = ?
+          WHERE id = ?
+        `)
+          .bind(
+            name,
+            status,
+            serviceId
+          )
+          .run();
+
+      } catch {
+
+        return json(
+          {
+            success: false,
+            error:
+              "Game name already exists"
+          },
+          409,
+          corsHeaders(request)
+        );
+      }
+
+
+      /*
+        logo_data omitted:
+        keep existing logo.
+
+        logo_data = "":
+        remove logo.
+
+        logo_data = null:
+        remove logo.
+
+        logo_data = data:image/...:
+        replace logo.
+      */
+
+      if (
+        body.logo_data !== undefined
+      ) {
+
+        const logo =
+          body.logo_data
+            ? String(body.logo_data)
+            : null;
+
+
+        if (logo) {
+
+          await env.DB.prepare(`
+            INSERT INTO service_logos
+              (
+                service_id,
+                logo_data,
+                updated_at
+              )
+            VALUES (?, ?, CURRENT_TIMESTAMP)
+            ON CONFLICT(service_id)
+            DO UPDATE SET
+              logo_data = excluded.logo_data,
+              updated_at = CURRENT_TIMESTAMP
+          `)
+            .bind(
+              serviceId,
+              logo
+            )
+            .run();
+
+        } else {
+
+          await env.DB.prepare(`
+            DELETE FROM service_logos
+            WHERE service_id = ?
+          `)
+            .bind(serviceId)
+            .run();
+        }
+      }
+
+
+      const updated =
+        await env.DB.prepare(`
+          SELECT
+            s.id,
+            s.name,
+            s.status,
+            s.created_at,
+            sl.logo_data,
+            sl.updated_at AS logo_updated_at
+          FROM services s
+          LEFT JOIN service_logos sl
+            ON sl.service_id = s.id
+          WHERE s.id = ?
+          LIMIT 1
+        `)
+          .bind(serviceId)
+          .first();
+
+
+      return json(
+        {
+          success: true,
+          service: updated
+        },
+        200,
+        corsHeaders(request)
+      );
+    }
+
+
+    /* =====================================
+       DEVELOPER SERVICES - DELETE
+    ===================================== */
+
+    if (
+      developerServiceMatch &&
+      method === "DELETE"
+    ) {
+
+      const auth =
+        await requireDeveloper(
+          request,
+          env
+        );
+
+      if (auth.error)
+        return auth.error;
+
+
+      const serviceId =
+        Number(
+          developerServiceMatch[1]
+        );
+
+
+      const service =
+        await env.DB.prepare(`
+          SELECT
+            id,
+            name
+          FROM services
+          WHERE id = ?
+          LIMIT 1
+        `)
+          .bind(serviceId)
+          .first();
+
+
+      if (!service) {
+        return json(
+          {
+            success: false,
+            error:
+              "Game not found"
+          },
+          404,
+          corsHeaders(request)
+        );
+      }
+
+
+      /*
+        Remove the game's logo first.
+      */
+
+      await env.DB.prepare(`
+        DELETE FROM service_logos
+        WHERE service_id = ?
+      `)
+        .bind(serviceId)
+        .run();
+
+
+      /*
+        We keep old reseller keys untouched.
+        This prevents historical key records
+        from being destroyed.
+      */
+
+      await env.DB.prepare(`
+        DELETE FROM services
+        WHERE id = ?
+      `)
+        .bind(serviceId)
+        .run();
+
+
+      return json(
+        {
+          success: true,
+          deleted: service
         },
         200,
         corsHeaders(request)
@@ -1616,7 +2158,6 @@ async function handleRequest(
 
     /* =====================================
        USER KEYS - LIST
-       ADMIN ONLY
     ===================================== */
 
     if (
@@ -1667,7 +2208,6 @@ async function handleRequest(
 
     /* =====================================
        USER KEY REVOKE
-       ADMIN ONLY
     ===================================== */
 
     const revokeMatch =
@@ -1733,7 +2273,6 @@ async function handleRequest(
 
     /* =====================================
        USER KEY ACTIVATE
-       ADMIN ONLY
     ===================================== */
 
     const activateMatch =
@@ -1844,7 +2383,6 @@ async function handleRequest(
 
     /* =====================================
        USERS - LIST
-       ADMIN ONLY
     ===================================== */
 
     if (
@@ -1898,7 +2436,6 @@ async function handleRequest(
 
     /* =====================================
        USERS - CREATE
-       ADMIN ONLY
     ===================================== */
 
     if (
@@ -2027,8 +2564,8 @@ async function handleRequest(
 
 
     /* =====================================
-       SERVICES - LIST
-       ADMIN ONLY
+       ADMIN SERVICES - LIST
+       ADMIN READ ONLY
     ===================================== */
 
     if (
@@ -2050,12 +2587,16 @@ async function handleRequest(
       const result =
         await env.DB.prepare(`
           SELECT
-            id,
-            name,
-            status,
-            created_at
-          FROM services
-          ORDER BY id DESC
+            s.id,
+            s.name,
+            s.status,
+            s.created_at,
+            sl.logo_data,
+            sl.updated_at AS logo_updated_at
+          FROM services s
+          LEFT JOIN service_logos sl
+            ON sl.service_id = s.id
+          ORDER BY s.id DESC
         `)
           .all();
 
@@ -2073,93 +2614,30 @@ async function handleRequest(
 
 
     /* =====================================
-       SERVICES - CREATE
-       ADMIN ONLY
+       ADMIN SERVICES - WRITE BLOCKED
+       ADMIN CANNOT CREATE GAMES
     ===================================== */
 
     if (
       path ===
         "/api/admin/services" &&
-      method === "POST"
+      (
+        method === "POST" ||
+        method === "PUT" ||
+        method === "PATCH" ||
+        method === "DELETE"
+      )
     ) {
 
-      const auth =
-        await requireAdmin(
-          request,
-          env
-        );
-
-      if (auth.error)
-        return auth.error;
-
-
-      let body = {};
-
-      try {
-        body =
-          await request.json();
-      } catch {
-        body = {};
-      }
-
-
-      const name =
-        String(
-          body.name || ""
-        ).trim();
-
-
-      if (!name) {
-        return json(
-          {
-            success: false,
-            error:
-              "Service name is required"
-          },
-          400,
-          corsHeaders(request)
-        );
-      }
-
-
-      try {
-
-        const result =
-          await env.DB.prepare(`
-            INSERT INTO services
-              (name, status)
-            VALUES (?, 'active')
-            RETURNING
-              id,
-              name,
-              status,
-              created_at
-          `)
-            .bind(name)
-            .first();
-
-
-        return json(
-          {
-            success: true,
-            service: result
-          },
-          201,
-          corsHeaders(request)
-        );
-
-      } catch {
-
-        return json(
-          {
-            success: false,
-            error:
-              "Service already exists"
-          },
-          409,
-          corsHeaders(request)
-        );
-      }
+      return json(
+        {
+          success: false,
+          error:
+            "Developer access required"
+        },
+        403,
+        corsHeaders(request)
+      );
     }
 
 
@@ -2192,7 +2670,17 @@ async function handleRequest(
       return json(
         {
           success: true,
-          branding: result
+          branding:
+            result || {
+              developer_label:
+                "DEVELOPER",
+              developer_name:
+                "LAWANGEN",
+              admin_name:
+                "ROKHAN SYED",
+              logo_data:
+                null
+            }
         },
         200,
         corsHeaders(request)
@@ -2232,52 +2720,72 @@ async function handleRequest(
 
 
       const developerLabel =
-        String(
-          body.developer_label ||
-          "DEVELOPER"
-        ).trim();
+        body.developer_label !== undefined
+          ? String(
+              body.developer_label || ""
+            ).trim()
+          : "DEVELOPER";
 
 
       const developerName =
-        String(
-          body.developer_name ||
-          "LAWANGEN"
-        ).trim();
+        body.developer_name !== undefined
+          ? String(
+              body.developer_name || ""
+            ).trim()
+          : "LAWANGEN";
 
 
       const adminName =
-        String(
-          body.admin_name ||
-          "ROKHAN SYED"
-        ).trim();
-
-
-      const logoData =
-        body.logo_data !== undefined
+        body.admin_name !== undefined
           ? String(
-              body.logo_data || ""
-            )
-          : null;
+              body.admin_name || ""
+            ).trim()
+          : "ROKHAN SYED";
 
 
-      if (
-        logoData &&
-        logoData.length >
-          2_000_000
-      ) {
-        return json(
-          {
-            success: false,
-            error:
-              "Logo is too large"
-          },
-          400,
-          corsHeaders(request)
+      /*
+        Important:
+
+        If logo_data is omitted,
+        existing logo is preserved.
+
+        If logo_data is "",
+        logo is removed.
+
+        If logo_data contains a data:image,
+        logo is permanently replaced.
+      */
+
+      const hasLogoField =
+        Object.prototype.hasOwnProperty.call(
+          body,
+          "logo_data"
         );
-      }
 
 
-      if (logoData !== null) {
+      if (hasLogoField) {
+
+        const logoData =
+          body.logo_data
+            ? String(body.logo_data)
+            : "";
+
+
+        if (
+          logoData &&
+          !validLogoData(logoData)
+        ) {
+          return json(
+            {
+              success: false,
+              error:
+                "Logo must be an image and must not exceed the allowed size"
+            },
+            400,
+            corsHeaders(request)
+          );
+        }
+
 
         await env.DB.prepare(`
           UPDATE branding
@@ -2293,10 +2801,27 @@ async function handleRequest(
             developerLabel,
             developerName,
             adminName,
-            logoData
+            logoData || null
           )
           .run();
 
+      } else {
+
+        await env.DB.prepare(`
+          UPDATE branding
+          SET
+            developer_label = ?,
+            developer_name = ?,
+            admin_name = ?,
+            updated_at = CURRENT_TIMESTAMP
+          WHERE id = 1
+        `)
+          .bind(
+            developerLabel,
+            developerName,
+            adminName
+          )
+          .run();
       }
 
 
