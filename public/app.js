@@ -19,7 +19,9 @@ const state = {
   },
 
   hasExistingSession: false,
-  existingSession: null
+  existingSession: null,
+
+  gameLogoTarget: null
 };
 
 
@@ -101,98 +103,296 @@ const copyAdminKeyButton = $("copyAdminKeyButton");
 ========================================= */
 
 const CONTROL_SERVERS = [
-  {
-    name: "India",
-    code: "IN",
-    flag: "🇮🇳"
-  },
-  {
-    name: "Bangladesh",
-    code: "BD",
-    flag: "🇧🇩"
-  },
-  {
-    name: "Pakistan",
-    code: "PK",
-    flag: "🇵🇰"
-  },
-  {
-    name: "Singapore",
-    code: "SG",
-    flag: "🇸🇬"
-  },
-  {
-    name: "Indonesia",
-    code: "ID",
-    flag: "🇮🇩"
-  },
-  {
-    name: "Thailand",
-    code: "TH",
-    flag: "🇹🇭"
-  },
-  {
-    name: "Vietnam",
-    code: "VN",
-    flag: "🇻🇳"
-  },
-  {
-    name: "Taiwan",
-    code: "TW",
-    flag: "🇹🇼"
-  },
-  {
-    name: "Middle East",
-    code: "MENA",
-    flag: "🌍"
-  },
-  {
-    name: "Europe",
-    code: "EU",
-    flag: "🇪🇺"
-  },
-  {
-    name: "Russia",
-    code: "CIS",
-    flag: "🇷🇺"
-  },
-  {
-    name: "Brazil",
-    code: "BR",
-    flag: "🇧🇷"
-  },
-  {
-    name: "North America",
-    code: "NA",
-    flag: "🇺🇸"
-  },
-  {
-    name: "South America",
-    code: "LATAM",
-    flag: "🌎"
-  },
-  {
-    name: "Africa",
-    code: "AF",
-    flag: "🌍"
-  }
+  { name: "India", code: "IN", flag: "🇮🇳" },
+  { name: "Bangladesh", code: "BD", flag: "🇧🇩" },
+  { name: "Pakistan", code: "PK", flag: "🇵🇰" },
+  { name: "Singapore", code: "SG", flag: "🇸🇬" },
+  { name: "Indonesia", code: "ID", flag: "🇮🇩" },
+  { name: "Thailand", code: "TH", flag: "🇹🇭" },
+  { name: "Vietnam", code: "VN", flag: "🇻🇳" },
+  { name: "Taiwan", code: "TW", flag: "🇹🇼" },
+  { name: "Middle East", code: "MENA", flag: "🌍" },
+  { name: "Europe", code: "EU", flag: "🇪🇺" },
+  { name: "Russia", code: "CIS", flag: "🇷🇺" },
+  { name: "Brazil", code: "BR", flag: "🇧🇷" },
+  { name: "North America", code: "NA", flag: "🇺🇸" },
+  { name: "South America", code: "LATAM", flag: "🌎" },
+  { name: "Africa", code: "AF", flag: "🌍" }
 ];
 
 
 /* =========================================
-   LOCAL LOGO
+   EXTRA PREMIUM GAME CSS
+   Injected by JS so style.css does not
+   need to be replaced.
 ========================================= */
 
-const savedLogo =
-  localStorage.getItem("lawangenLogo");
+function injectGameManagerStyles() {
 
-if (savedLogo) {
-  applyLogoToUI(savedLogo);
+  if ($("lawangenGameManagerStyles")) {
+    return;
+  }
+
+  const style = document.createElement("style");
+
+  style.id = "lawangenGameManagerStyles";
+
+  style.textContent = `
+    .lawangen-game-header {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:16px;
+    }
+
+    .lawangen-add-game {
+      border:1px solid rgba(255,255,255,.12);
+      background:linear-gradient(
+        135deg,
+        rgba(255,255,255,.12),
+        rgba(255,255,255,.04)
+      );
+      color:#fff;
+      border-radius:14px;
+      padding:11px 15px;
+      font-weight:800;
+      letter-spacing:.3px;
+      cursor:pointer;
+      box-shadow:0 8px 24px rgba(0,0,0,.18);
+    }
+
+    .lawangen-add-game:active {
+      transform:scale(.97);
+    }
+
+    .game-card {
+      position:relative;
+    }
+
+    .game-manager-actions {
+      display:flex;
+      flex-wrap:wrap;
+      gap:7px;
+      margin-top:11px;
+    }
+
+    .game-manager-actions button {
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.055);
+      color:#fff;
+      border-radius:10px;
+      padding:7px 10px;
+      font-size:10px;
+      font-weight:800;
+      letter-spacing:.4px;
+      cursor:pointer;
+    }
+
+    .game-manager-actions button:active {
+      transform:scale(.96);
+    }
+
+    .game-manager-actions .game-danger {
+      color:#ff6b7d;
+      border-color:rgba(255,80,100,.18);
+      background:rgba(255,60,80,.07);
+    }
+
+    .game-manager-actions .game-primary {
+      color:#75d7ff;
+      border-color:rgba(70,190,255,.18);
+      background:rgba(70,190,255,.07);
+    }
+
+    .game-manager-actions .game-success {
+      color:#5dffad;
+      border-color:rgba(50,255,150,.18);
+      background:rgba(50,255,150,.07);
+    }
+
+    .lawangen-game-modal {
+      position:fixed;
+      inset:0;
+      z-index:99999;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:22px;
+    }
+
+    .lawangen-game-modal.hidden {
+      display:none;
+    }
+
+    .lawangen-game-modal-backdrop {
+      position:absolute;
+      inset:0;
+      background:rgba(0,0,0,.72);
+      backdrop-filter:blur(14px);
+      -webkit-backdrop-filter:blur(14px);
+    }
+
+    .lawangen-game-dialog {
+      position:relative;
+      width:min(430px,100%);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:24px;
+      background:linear-gradient(
+        145deg,
+        rgba(28,31,39,.98),
+        rgba(10,12,17,.98)
+      );
+      box-shadow:
+        0 30px 80px rgba(0,0,0,.55),
+        inset 0 1px rgba(255,255,255,.05);
+      padding:22px;
+    }
+
+    .lawangen-game-dialog h3 {
+      margin:0 0 6px;
+      color:#fff;
+      font-size:21px;
+    }
+
+    .lawangen-game-dialog p {
+      margin:0 0 18px;
+      color:#8d929d;
+      font-size:13px;
+    }
+
+    .lawangen-game-dialog label {
+      display:block;
+      margin:13px 0 7px;
+      color:#858b96;
+      font-size:10px;
+      font-weight:800;
+      letter-spacing:1px;
+    }
+
+    .lawangen-game-dialog input,
+    .lawangen-game-dialog select {
+      width:100%;
+      box-sizing:border-box;
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:13px;
+      background:rgba(255,255,255,.055);
+      color:#fff;
+      padding:13px;
+      outline:none;
+    }
+
+    .lawangen-game-dialog input:focus,
+    .lawangen-game-dialog select:focus {
+      border-color:rgba(80,190,255,.45);
+    }
+
+    .lawangen-game-dialog-buttons {
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin-top:20px;
+    }
+
+    .lawangen-game-dialog-buttons button {
+      border:0;
+      border-radius:13px;
+      padding:13px;
+      font-weight:800;
+      cursor:pointer;
+    }
+
+    .lawangen-game-cancel {
+      background:rgba(255,255,255,.07);
+      color:#fff;
+    }
+
+    .lawangen-game-save {
+      background:#fff;
+      color:#090b10;
+    }
+
+    .lawangen-file-note {
+      color:#777d88;
+      font-size:10px;
+      margin-top:7px;
+      line-height:1.4;
+    }
+
+    .lawangen-logo-preview {
+      width:70px;
+      height:70px;
+      border-radius:18px;
+      overflow:hidden;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      margin-bottom:10px;
+    }
+
+    .lawangen-logo-preview img {
+      width:100%;
+      height:100%;
+      object-fit:contain;
+    }
+
+    .lawangen-logo-preview span {
+      color:#aaa;
+      font-weight:900;
+      font-size:20px;
+    }
+
+    .lawangen-top-logo {
+      width:28px;
+      height:28px;
+      border-radius:8px;
+      overflow:hidden;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      margin-right:8px;
+      vertical-align:middle;
+      background:rgba(255,255,255,.07);
+    }
+
+    .lawangen-top-logo img {
+      width:100%;
+      height:100%;
+      object-fit:contain;
+    }
+
+    .game-logo img {
+      object-fit:contain;
+    }
+  `;
+
+  document.head.appendChild(style);
 }
+
+injectGameManagerStyles();
+
+
+/* =========================================
+   LOCAL LOGO CACHE
+========================================= */
+
+try {
+
+  const cachedLogo =
+    localStorage.getItem("lawangenLogo");
+
+  if (cachedLogo) {
+    applyLogoToUI(cachedLogo);
+  }
+
+} catch {}
 
 
 /* =========================================
    SPLASH CONTROL
+   Approximately 7 seconds total.
 ========================================= */
 
 let splashFinished = false;
@@ -211,38 +411,30 @@ function finishSplash() {
 
     splash.classList.add("hidden");
 
-    if (
-      state.existingSession === "developer"
-    ) {
-
+    if (state.existingSession === "developer") {
       await openDeveloperPanel();
       return;
-
     }
 
-    if (
-      state.existingSession === "admin"
-    ) {
-
+    if (state.existingSession === "admin") {
       await openAdminPanel();
       return;
-
     }
 
     showAccessScreen();
 
   }, 650);
-
 }
 
 
 /*
-  Professional startup screen.
+  6.35 sec + 0.65 sec fade
+  = approximately 7 seconds.
 */
 
 setTimeout(
   finishSplash,
-  6200
+  6350
 );
 
 
@@ -306,10 +498,7 @@ function showDeveloperLogin() {
 
 function playSound(type = "click") {
 
-  if (
-    !soundToggle ||
-    !soundToggle.checked
-  ) {
+  if (!soundToggle || !soundToggle.checked) {
     return;
   }
 
@@ -323,8 +512,7 @@ function playSound(type = "click") {
       return;
     }
 
-    const audio =
-      new AudioContext();
+    const audio = new AudioContext();
 
     const oscillator =
       audio.createOscillator();
@@ -373,10 +561,7 @@ function playSound(type = "click") {
    API
 ========================================= */
 
-async function api(
-  path,
-  options = {}
-) {
+async function api(path, options = {}) {
 
   const response =
     await fetch(
@@ -386,9 +571,7 @@ async function api(
         ...options,
 
         headers: {
-          "Content-Type":
-            "application/json",
-
+          "Content-Type": "application/json",
           ...(options.headers || {})
         }
       }
@@ -424,31 +607,34 @@ async function loadPublicBranding() {
   try {
 
     const result =
-      await api(
-        "/api/admin/branding"
-      );
+      await api("/api/admin/branding");
 
-    if (result.branding) {
+    if (!result.branding) {
+      return;
+    }
 
-      state.branding = {
-        ...state.branding,
-        ...result.branding
-      };
+    state.branding = {
+      ...state.branding,
+      ...result.branding
+    };
 
-      if (
-        state.branding.logo_data
-      ) {
+    const logo =
+      state.branding.logo_data || "";
 
+    if (logo) {
+
+      try {
         localStorage.setItem(
           "lawangenLogo",
-          state.branding.logo_data
+          logo
         );
+      } catch {}
 
-        applyLogoToUI(
-          state.branding.logo_data
-        );
+      applyLogoToUI(logo);
 
-      }
+    } else {
+
+      clearLogoFromUI();
 
     }
 
@@ -493,9 +679,90 @@ function applyLogoToUI(logo) {
     img.src = logo;
     img.alt = "LAWANGEN Logo";
 
+    img.style.width = "100%";
+    img.style.height = "100%";
+    img.style.objectFit = "contain";
+
     element.appendChild(img);
 
   });
+
+  applyTopbarLogo(logo);
+
+}
+
+
+function clearLogoFromUI() {
+
+  const ids = [
+    "splashLogo",
+    "loginLogo",
+    "adminFormLogo",
+    "developerLoginLogo"
+  ];
+
+  ids.forEach(id => {
+
+    const element = $(id);
+
+    if (!element) {
+      return;
+    }
+
+    element.innerHTML = "";
+
+  });
+
+  const topLogo =
+    $("lawangenTopLogo");
+
+  if (topLogo) {
+    topLogo.remove();
+  }
+
+}
+
+
+function applyTopbarLogo(logo) {
+
+  if (!logo) {
+    return;
+  }
+
+  const topBrand =
+    document.querySelector(".top-brand");
+
+  if (!topBrand) {
+    return;
+  }
+
+  let logoBox =
+    $("lawangenTopLogo");
+
+  if (!logoBox) {
+
+    logoBox =
+      document.createElement("span");
+
+    logoBox.id =
+      "lawangenTopLogo";
+
+    logoBox.className =
+      "lawangen-top-logo";
+
+    topBrand.prepend(logoBox);
+
+  }
+
+  logoBox.innerHTML = "";
+
+  const img =
+    document.createElement("img");
+
+  img.src = logo;
+  img.alt = "LAWANGEN";
+
+  logoBox.appendChild(img);
 
 }
 
@@ -566,9 +833,7 @@ showKey.addEventListener(
 
     playSound();
 
-    if (
-      adminKey.type === "password"
-    ) {
+    if (adminKey.type === "password") {
 
       adminKey.type = "text";
       showKey.textContent = "○";
@@ -702,9 +967,7 @@ showDeveloperToken.addEventListener(
 
     playSound();
 
-    if (
-      developerToken.type === "password"
-    ) {
+    if (developerToken.type === "password") {
 
       developerToken.type = "text";
       showDeveloperToken.textContent = "○";
@@ -761,9 +1024,7 @@ async function developerLogin() {
   developerEnterButton.disabled = true;
 
   const buttonText =
-    developerEnterButton.querySelector(
-      "span"
-    );
+    developerEnterButton.querySelector("span");
 
   if (buttonText) {
     buttonText.textContent =
@@ -779,8 +1040,7 @@ async function developerLogin() {
           method: "POST",
 
           headers: {
-            "X-Developer-Token":
-              token
+            "X-Developer-Token": token
           }
         }
       );
@@ -840,9 +1100,7 @@ async function openAdminPanel() {
   try {
 
     const me =
-      await api(
-        "/api/admin/me"
-      );
+      await api("/api/admin/me");
 
     if (!me.success) {
       throw new Error("Session expired.");
@@ -907,9 +1165,7 @@ async function openDeveloperPanel() {
   try {
 
     const result =
-      await api(
-        "/api/developer/me"
-      );
+      await api("/api/developer/me");
 
     if (!result.success) {
       throw new Error(
@@ -1013,9 +1269,7 @@ function updateAdminIdentity() {
       name.split(" ");
 
     welcome.innerHTML =
-      `${escapeHTML(
-        parts[0] || ""
-      )}
+      `${escapeHTML(parts[0] || "")}
       <span>
         ${escapeHTML(
           parts.slice(1).join(" ")
@@ -1077,7 +1331,9 @@ async function loadDashboard() {
       result.stats?.users ?? 0;
 
     totalServices.textContent =
-      result.stats?.services ?? 0;
+      result.stats?.services ??
+      state.services.length ??
+      0;
 
     renderActivity(
       result.activity || []
@@ -1548,11 +1804,6 @@ async function loadServices() {
 
   try {
 
-    /*
-      Developer and Admin use different
-      service endpoints.
-    */
-
     const endpoint =
       state.mode === "developer"
         ? "/api/developer/services"
@@ -1577,28 +1828,85 @@ async function loadServices() {
       error
     );
 
-    /*
-      If Developer API is not yet installed,
-      keep the existing UI instead of crashing.
-    */
-
-    if (!state.services.length) {
-      renderServices();
-    }
+    renderServices();
 
   }
 
 }
 
 
+/* =========================================
+   GAME MANAGER HEADER
+========================================= */
+
+function renderGameManagerHeader() {
+
+  const heading =
+    document.querySelector(
+      "#gamesPage .page-heading"
+    );
+
+  if (!heading) {
+    return;
+  }
+
+  let button =
+    $("lawangenAddGameButton");
+
+  if (!state.developer) {
+
+    if (button) {
+      button.remove();
+    }
+
+    return;
+
+  }
+
+  if (button) {
+    return;
+  }
+
+  button =
+    document.createElement("button");
+
+  button.id =
+    "lawangenAddGameButton";
+
+  button.className =
+    "lawangen-add-game";
+
+  button.type =
+    "button";
+
+  button.textContent =
+    "＋ ADD GAME";
+
+  button.addEventListener(
+    "click",
+    () => {
+
+      playSound();
+
+      openGameEditor();
+
+    }
+  );
+
+  heading.appendChild(button);
+
+}
+
+
+/* =========================================
+   RENDER SERVICES
+========================================= */
+
 function renderServices() {
 
   gameList.innerHTML = "";
 
-  /*
-    Developer server-control information
-    appears above the games list on Home.
-  */
+  renderGameManagerHeader();
 
   if (!state.services.length) {
 
@@ -1639,21 +1947,76 @@ function renderServices() {
           .slice(0, 2)
           .toUpperCase();
 
-      const logo =
-        service.logo_data
-          ? `
-            <div class="game-logo">
-              <img
-                src="${escapeAttribute(service.logo_data)}"
-                alt="${escapeAttribute(name)}"
-              >
-            </div>
-          `
-          : `
-            <div class="game-logo-placeholder">
-              ${escapeHTML(initials)}
-            </div>
-          `;
+      let logo = "";
+
+      if (service.logo_data) {
+
+        logo = `
+          <div class="game-logo">
+            <img
+              src="${escapeAttribute(service.logo_data)}"
+              alt="${escapeAttribute(name)}"
+            >
+          </div>
+        `;
+
+      } else {
+
+        logo = `
+          <div class="game-logo-placeholder">
+            ${escapeHTML(initials)}
+          </div>
+        `;
+
+      }
+
+
+      const manager =
+        state.developer
+        ? `
+          <div class="game-manager-actions">
+
+            <button
+              class="game-primary"
+              data-game-action="rename"
+              data-game-id="${service.id}"
+            >
+              RENAME
+            </button>
+
+            <button
+              class="game-primary"
+              data-game-action="logo"
+              data-game-id="${service.id}"
+            >
+              CHANGE LOGO
+            </button>
+
+            ${
+              service.logo_data
+              ? `
+                <button
+                  data-game-action="remove-logo"
+                  data-game-id="${service.id}"
+                >
+                  REMOVE LOGO
+                </button>
+              `
+              : ""
+            }
+
+            <button
+              class="game-danger"
+              data-game-action="delete"
+              data-game-id="${service.id}"
+            >
+              DELETE
+            </button>
+
+          </div>
+        `
+        : "";
+
 
       card.innerHTML = `
 
@@ -1681,6 +2044,8 @@ function renderServices() {
             }
           </span>
 
+          ${manager}
+
         </div>
 
       `;
@@ -1689,6 +2054,809 @@ function renderServices() {
 
     }
   );
+
+
+  attachGameManagerActions();
+
+}
+
+
+/* =========================================
+   GAME MANAGER ACTIONS
+========================================= */
+
+function attachGameManagerActions() {
+
+  document
+    .querySelectorAll(
+      "[data-game-action]"
+    )
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        async () => {
+
+          if (!state.developer) {
+            return;
+          }
+
+          playSound();
+
+          const action =
+            button.dataset.gameAction;
+
+          const id =
+            button.dataset.gameId;
+
+          if (!id) {
+            return;
+          }
+
+          if (action === "rename") {
+            await renameGame(id);
+          }
+
+          if (action === "logo") {
+            openGameLogoPicker(id);
+          }
+
+          if (action === "remove-logo") {
+            await removeGameLogo(id);
+          }
+
+          if (action === "delete") {
+            await deleteGame(id);
+          }
+
+        }
+      );
+
+    });
+
+}
+
+
+/* =========================================
+   GAME EDITOR MODAL
+========================================= */
+
+function createGameEditorModal() {
+
+  let modal =
+    $("lawangenGameEditor");
+
+  if (modal) {
+    return modal;
+  }
+
+  modal =
+    document.createElement("div");
+
+  modal.id =
+    "lawangenGameEditor";
+
+  modal.className =
+    "lawangen-game-modal hidden";
+
+  modal.innerHTML = `
+
+    <div
+      class="lawangen-game-modal-backdrop"
+      data-close-game-editor="true"
+    ></div>
+
+    <div class="lawangen-game-dialog">
+
+      <h3 id="lawangenGameEditorTitle">
+        Add Game
+      </h3>
+
+      <p>
+        Create a new game/service for the panel.
+      </p>
+
+      <label>
+        GAME NAME
+      </label>
+
+      <input
+        id="lawangenGameName"
+        type="text"
+        maxlength="100"
+        placeholder="Enter game name"
+        autocomplete="off"
+      >
+
+      <label>
+        STATUS
+      </label>
+
+      <select id="lawangenGameStatus">
+
+        <option value="active">
+          Active
+        </option>
+
+        <option value="maintenance">
+          Maintenance
+        </option>
+
+      </select>
+
+      <label>
+        GAME LOGO
+      </label>
+
+      <div
+        id="lawangenGameLogoPreview"
+        class="lawangen-logo-preview"
+      >
+        <span>LOGO</span>
+      </div>
+
+      <input
+        id="lawangenGameLogoFile"
+        type="file"
+        accept="image/png,image/jpeg,image/webp,image/*"
+        hidden
+      >
+
+      <button
+        id="lawangenChooseGameLogo"
+        class="small-button"
+        type="button"
+      >
+        SELECT LOGO
+      </button>
+
+      <div class="lawangen-file-note">
+        Maximum logo size: 4 MB
+      </div>
+
+      <div class="lawangen-game-dialog-buttons">
+
+        <button
+          id="lawangenCancelGame"
+          class="lawangen-game-cancel"
+          type="button"
+        >
+          CANCEL
+        </button>
+
+        <button
+          id="lawangenSaveGame"
+          class="lawangen-game-save"
+          type="button"
+        >
+          SAVE GAME
+        </button>
+
+      </div>
+
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+
+  $("lawangenCancelGame")
+    .addEventListener(
+      "click",
+      closeGameEditor
+    );
+
+
+  modal
+    .querySelector(
+      "[data-close-game-editor]"
+    )
+    .addEventListener(
+      "click",
+      closeGameEditor
+    );
+
+
+  $("lawangenChooseGameLogo")
+    .addEventListener(
+      "click",
+      () => {
+
+        playSound();
+
+        $("lawangenGameLogoFile").click();
+
+      }
+    );
+
+
+  $("lawangenGameLogoFile")
+    .addEventListener(
+      "change",
+      handleNewGameLogo
+    );
+
+
+  $("lawangenSaveGame")
+    .addEventListener(
+      "click",
+      saveNewGame
+    );
+
+
+  return modal;
+}
+
+
+let pendingNewGameLogo = "";
+
+
+function openGameEditor() {
+
+  if (!state.developer) {
+    return;
+  }
+
+  const modal =
+    createGameEditorModal();
+
+  $("lawangenGameEditorTitle").textContent =
+    "Add Game";
+
+  $("lawangenGameName").value = "";
+
+  $("lawangenGameStatus").value =
+    "active";
+
+  $("lawangenGameLogoFile").value =
+    "";
+
+  pendingNewGameLogo = "";
+
+  $("lawangenGameLogoPreview").innerHTML =
+    "<span>LOGO</span>";
+
+  modal.classList.remove("hidden");
+
+  setTimeout(() => {
+    $("lawangenGameName")?.focus();
+  }, 150);
+
+}
+
+
+function closeGameEditor() {
+
+  const modal =
+    $("lawangenGameEditor");
+
+  if (modal) {
+    modal.classList.add("hidden");
+  }
+
+}
+
+
+async function handleNewGameLogo(event) {
+
+  const file =
+    event.target.files?.[0];
+
+  if (!file) {
+    return;
+  }
+
+  if (file.size > 4 * 1024 * 1024) {
+
+    alert(
+      "Please select a logo smaller than 4 MB."
+    );
+
+    event.target.value = "";
+
+    return;
+
+  }
+
+  try {
+
+    pendingNewGameLogo =
+      await fileToDataURL(file);
+
+    $("lawangenGameLogoPreview").innerHTML = `
+      <img
+        src="${escapeAttribute(pendingNewGameLogo)}"
+        alt="Game Logo"
+      >
+    `;
+
+  } catch {
+
+    pendingNewGameLogo = "";
+
+    alert(
+      "Unable to read the selected logo."
+    );
+
+  }
+
+}
+
+
+async function saveNewGame() {
+
+  if (!state.developer) {
+    return;
+  }
+
+  const name =
+    $("lawangenGameName")
+      .value
+      .trim();
+
+  const status =
+    $("lawangenGameStatus")
+      .value;
+
+  if (!name) {
+
+    playSound("error");
+
+    alert(
+      "Please enter a game name."
+    );
+
+    return;
+
+  }
+
+
+  const duplicate =
+    state.services.some(
+      service =>
+        String(service.name || "")
+          .toLowerCase()
+          .trim() ===
+        name.toLowerCase()
+    );
+
+  if (duplicate) {
+
+    playSound("error");
+
+    alert(
+      "This game already exists."
+    );
+
+    return;
+
+  }
+
+
+  const button =
+    $("lawangenSaveGame");
+
+  button.disabled =
+    true;
+
+  button.textContent =
+    "SAVING...";
+
+
+  try {
+
+    const body = {
+      name,
+      status
+    };
+
+    if (pendingNewGameLogo) {
+      body.logo_data =
+        pendingNewGameLogo;
+    }
+
+
+    const result =
+      await api(
+        "/api/developer/services",
+        {
+          method: "POST",
+          body: JSON.stringify(body)
+        }
+      );
+
+
+    if (!result.success) {
+
+      throw new Error(
+        result.error ||
+        "Unable to create game."
+      );
+
+    }
+
+
+    playSound("success");
+
+    closeGameEditor();
+
+    await loadServices();
+    await loadDashboard();
+
+  } catch (error) {
+
+    playSound("error");
+
+    alert(
+      error.message ||
+      "Unable to create game."
+    );
+
+  } finally {
+
+    button.disabled =
+      false;
+
+    button.textContent =
+      "SAVE GAME";
+
+  }
+
+}
+
+
+/* =========================================
+   RENAME GAME
+========================================= */
+
+async function renameGame(id) {
+
+  if (!state.developer) {
+    return;
+  }
+
+  const service =
+    state.services.find(
+      item => String(item.id) === String(id)
+    );
+
+  if (!service) {
+    return;
+  }
+
+  const oldName =
+    service.name || "";
+
+  const newName =
+    window.prompt(
+      "Enter new game name:",
+      oldName
+    );
+
+  if (newName === null) {
+    return;
+  }
+
+  const name =
+    newName.trim();
+
+  if (!name) {
+
+    playSound("error");
+
+    alert(
+      "Game name cannot be empty."
+    );
+
+    return;
+
+  }
+
+  if (
+    name.toLowerCase() !==
+    oldName.toLowerCase()
+  ) {
+
+    const duplicate =
+      state.services.some(
+        item =>
+          String(item.id) !== String(id) &&
+          String(item.name || "")
+            .toLowerCase()
+            .trim() ===
+          name.toLowerCase()
+      );
+
+    if (duplicate) {
+
+      playSound("error");
+
+      alert(
+        "This game already exists."
+      );
+
+      return;
+
+    }
+
+  }
+
+
+  try {
+
+    await api(
+      `/api/developer/services/${encodeURIComponent(id)}`,
+      {
+        method: "PUT",
+
+        body: JSON.stringify({
+          name
+        })
+      }
+    );
+
+    playSound("success");
+
+    await loadServices();
+
+  } catch (error) {
+
+    playSound("error");
+
+    alert(
+      error.message ||
+      "Unable to rename game."
+    );
+
+  }
+
+}
+
+
+/* =========================================
+   GAME LOGO PICKER
+========================================= */
+
+function getGameLogoInput() {
+
+  let input =
+    $("lawangenGameLogoManagerInput");
+
+  if (input) {
+    return input;
+  }
+
+  input =
+    document.createElement("input");
+
+  input.id =
+    "lawangenGameLogoManagerInput";
+
+  input.type =
+    "file";
+
+  input.accept =
+    "image/png,image/jpeg,image/webp,image/*";
+
+  input.hidden =
+    true;
+
+  document.body.appendChild(input);
+
+  input.addEventListener(
+    "change",
+    handleManagerGameLogo
+  );
+
+  return input;
+
+}
+
+
+function openGameLogoPicker(id) {
+
+  if (!state.developer) {
+    return;
+  }
+
+  state.gameLogoTarget =
+    String(id);
+
+  const input =
+    getGameLogoInput();
+
+  input.value = "";
+
+  input.click();
+
+}
+
+
+async function handleManagerGameLogo(event) {
+
+  if (!state.developer) {
+    return;
+  }
+
+  const file =
+    event.target.files?.[0];
+
+  if (!file) {
+    return;
+  }
+
+  const id =
+    state.gameLogoTarget;
+
+  if (!id) {
+    return;
+  }
+
+
+  if (file.size > 4 * 1024 * 1024) {
+
+    alert(
+      "Please select a logo smaller than 4 MB."
+    );
+
+    event.target.value = "";
+
+    return;
+
+  }
+
+
+  try {
+
+    const data =
+      await fileToDataURL(file);
+
+    await api(
+      `/api/developer/services/${encodeURIComponent(id)}`,
+      {
+        method: "PUT",
+
+        body: JSON.stringify({
+          logo_data: data
+        })
+      }
+    );
+
+    playSound("success");
+
+    await loadServices();
+
+  } catch (error) {
+
+    playSound("error");
+
+    alert(
+      error.message ||
+      "Unable to save game logo."
+    );
+
+  } finally {
+
+    event.target.value = "";
+
+  }
+
+}
+
+
+/* =========================================
+   REMOVE GAME LOGO
+========================================= */
+
+async function removeGameLogo(id) {
+
+  if (!state.developer) {
+    return;
+  }
+
+  const service =
+    state.services.find(
+      item => String(item.id) === String(id)
+    );
+
+  if (!service) {
+    return;
+  }
+
+  const confirmed =
+    window.confirm(
+      `Remove logo from "${service.name}"?`
+    );
+
+  if (!confirmed) {
+    return;
+  }
+
+
+  try {
+
+    await api(
+      `/api/developer/services/${encodeURIComponent(id)}`,
+      {
+        method: "PUT",
+
+        body: JSON.stringify({
+          logo_data: ""
+        })
+      }
+    );
+
+    playSound("success");
+
+    await loadServices();
+
+  } catch (error) {
+
+    playSound("error");
+
+    alert(
+      error.message ||
+      "Unable to remove game logo."
+    );
+
+  }
+
+}
+
+
+/* =========================================
+   DELETE GAME
+========================================= */
+
+async function deleteGame(id) {
+
+  if (!state.developer) {
+    return;
+  }
+
+  const service =
+    state.services.find(
+      item => String(item.id) === String(id)
+    );
+
+  if (!service) {
+    return;
+  }
+
+  const confirmed =
+    window.confirm(
+      `Delete "${service.name}" permanently?`
+    );
+
+  if (!confirmed) {
+    return;
+  }
+
+
+  try {
+
+    await api(
+      `/api/developer/services/${encodeURIComponent(id)}`,
+      {
+        method: "DELETE"
+      }
+    );
+
+    playSound("success");
+
+    await loadServices();
+    await loadDashboard();
+
+  } catch (error) {
+
+    playSound("error");
+
+    alert(
+      error.message ||
+      "Unable to delete game."
+    );
+
+  }
 
 }
 
@@ -1711,6 +2879,7 @@ function populateGameSelect() {
       document.createElement("option");
 
     option.value = "";
+
     option.textContent =
       "No services available";
 
@@ -1719,6 +2888,7 @@ function populateGameSelect() {
     return;
 
   }
+
 
   state.services.forEach(service => {
 
@@ -1766,7 +2936,9 @@ function renderServerControl() {
       "server-control-section";
 
     const stats =
-      homePage.querySelector(".stats-grid");
+      homePage.querySelector(
+        ".stats-grid"
+      );
 
     if (stats) {
       stats.after(section);
@@ -1855,6 +3027,7 @@ async function createKey() {
   if (!service) {
 
     playSound("error");
+
     return;
 
   }
@@ -2145,7 +3318,7 @@ copyAdminKeyButton.addEventListener(
 
 
 /* =========================================
-   DEVELOPER LOGO
+   DEVELOPER APP LOGO
 ========================================= */
 
 selectLogoButton.addEventListener(
@@ -2185,14 +3358,8 @@ logoFileInput.addEventListener(
       return;
     }
 
-    /*
-      Frontend maximum: 4 MB.
-    */
 
-    if (
-      file.size >
-      4 * 1024 * 1024
-    ) {
+    if (file.size > 4 * 1024 * 1024) {
 
       alert(
         "Please select a logo smaller than 4 MB."
@@ -2204,33 +3371,61 @@ logoFileInput.addEventListener(
 
     }
 
+
     try {
 
       const data =
         await fileToDataURL(file);
 
-      await api(
-        "/api/admin/branding",
-        {
-          method: "PUT",
+      const result =
+        await api(
+          "/api/admin/branding",
+          {
+            method: "PUT",
 
-          body: JSON.stringify({
-            logo_data: data
-          })
-        }
-      );
+            body: JSON.stringify({
+              logo_data: data
+            })
+          }
+        );
+
+
+      if (
+        result &&
+        result.success === false
+      ) {
+
+        throw new Error(
+          result.error ||
+          "Unable to save logo."
+        );
+
+      }
+
+
+      /*
+        IMPORTANT:
+        Only save to local cache after
+        server successfully accepts it.
+      */
 
       state.branding.logo_data =
         data;
 
-      localStorage.setItem(
-        "lawangenLogo",
-        data
-      );
+      try {
+
+        localStorage.setItem(
+          "lawangenLogo",
+          data
+        );
+
+      } catch {}
+
 
       applyLogoToUI(data);
 
       playSound("success");
+
 
     } catch (error) {
 
@@ -2252,7 +3447,7 @@ logoFileInput.addEventListener(
 
 
 /* =========================================
-   REMOVE LOGO
+   REMOVE APP LOGO
 ========================================= */
 
 removeLogoButton.addEventListener(
@@ -2269,26 +3464,61 @@ removeLogoButton.addEventListener(
 
     }
 
+
+    const confirmed =
+      window.confirm(
+        "Remove the LAWANGEN application logo?"
+      );
+
+    if (!confirmed) {
+      return;
+    }
+
+
     try {
 
-      await api(
-        "/api/admin/branding",
-        {
-          method: "PUT",
+      const result =
+        await api(
+          "/api/admin/branding",
+          {
+            method: "PUT",
 
-          body: JSON.stringify({
-            logo_data: ""
-          })
-        }
-      );
+            body: JSON.stringify({
+              logo_data: ""
+            })
+          }
+        );
 
-      localStorage.removeItem(
-        "lawangenLogo"
-      );
+
+      if (
+        result &&
+        result.success === false
+      ) {
+
+        throw new Error(
+          result.error ||
+          "Unable to remove logo."
+        );
+
+      }
+
+
+      state.branding.logo_data =
+        "";
+
+      try {
+
+        localStorage.removeItem(
+          "lawangenLogo"
+        );
+
+      } catch {}
+
+
+      clearLogoFromUI();
 
       playSound("success");
 
-      location.reload();
 
     } catch (error) {
 
@@ -2368,12 +3598,14 @@ function switchPage(pageId) {
     activeNav.classList.add("active");
   }
 
-  /*
-    Refresh server control when returning Home.
-  */
 
   if (pageId === "homePage") {
     renderServerControl();
+  }
+
+
+  if (pageId === "gamesPage") {
+    renderServices();
   }
 
 }
@@ -2414,6 +3646,8 @@ generateFromHome.addEventListener(
 function openKeyModal() {
 
   playSound();
+
+  populateGameSelect();
 
   keyModal.classList.remove(
     "hidden"
@@ -2542,6 +3776,7 @@ logoutButton.addEventListener(
 
     } catch {}
 
+
     state.mode = "admin";
     state.admin = null;
     state.developer = false;
@@ -2573,6 +3808,7 @@ logoutButton.addEventListener(
 async function checkExistingSession() {
 
   let existingMode = null;
+
 
   try {
 
@@ -2676,6 +3912,34 @@ async function checkExistingSession() {
 
 
 /* =========================================
+   FILE TO DATA URL
+========================================= */
+
+function fileToDataURL(file) {
+
+  return new Promise(
+    (resolve, reject) => {
+
+      const reader =
+        new FileReader();
+
+      reader.onload =
+        () => resolve(
+          String(reader.result || "")
+        );
+
+      reader.onerror =
+        reject;
+
+      reader.readAsDataURL(file);
+
+    }
+  );
+
+}
+
+
+/* =========================================
    HELPERS
 ========================================= */
 
@@ -2746,30 +4010,6 @@ function formatDate(value) {
 }
 
 
-function fileToDataURL(file) {
-
-  return new Promise(
-    (resolve, reject) => {
-
-      const reader =
-        new FileReader();
-
-      reader.onload =
-        () => resolve(
-          reader.result
-        );
-
-      reader.onerror =
-        reject;
-
-      reader.readAsDataURL(file);
-
-    }
-  );
-
-}
-
-
 function escapeHTML(value) {
 
   return String(value ?? "")
@@ -2790,6 +4030,12 @@ function escapeAttribute(value) {
 /* =========================================
    INITIALIZE
 ========================================= */
+
+/*
+  Start these immediately.
+  Branding is fetched from D1, while the
+  splash timer continues independently.
+*/
 
 loadPublicBranding();
 
