@@ -10,24 +10,26 @@
 
   <meta name="theme-color" content="#05070a">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta
+    name="apple-mobile-web-app-status-bar-style"
+    content="black-translucent"
+  >
 
-  <title>LAWANGEN ADMIN</title>
+  <title>LAWANGEN ADMIN PANEL</title>
 
-  <!-- PWA -->
   <link rel="manifest" href="/manifest.json">
 
-  <!-- iPhone Home Screen Icon -->
   <link
     rel="apple-touch-icon"
     href="/logo.png"
   >
 
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="/style.css">
 </head>
 
 <body>
 
+  <!-- BACKGROUND -->
   <div class="background">
     <div class="orb orb-one"></div>
     <div class="orb orb-two"></div>
@@ -37,35 +39,47 @@
   </div>
 
 
-  <!-- SPLASH -->
-  <section id="splash" class="screen splash-screen">
+  <!-- =========================================
+       APP STARTUP / SPLASH
+  ========================================== -->
+
+  <section
+    id="splash"
+    class="screen splash-screen"
+  >
 
     <div class="splash-content">
 
-      <div id="splashLogo" class="apple-mark"></div>
-
-      <div class="brand-subtitle stylish-developer">
-        ᴅᴇᴠᴇʟᴏᴘᴇʀ
+      <!-- BIG LOGO -->
+      <div
+        id="splashLogo"
+        class="apple-mark splash-logo"
+      >
+        
       </div>
 
+      <!-- SMALL DEVELOPER -->
+      <div class="splash-developer">
+        DEVELOPER
+      </div>
+
+      <!-- BIG BRAND -->
       <div class="brand-title">
         LAWANGEN
       </div>
 
-      <div class="brand-subtitle">
+      <!-- PANEL TITLE -->
+      <div class="splash-panel-title">
         ADMIN PANEL
       </div>
 
-      <div class="splash-developed">
-        Specially developed this admin panel for
+      <!-- CREDIT -->
+      <div class="splash-created">
+        Specially Created for
         <strong>ROKHAN SYED</strong>
       </div>
 
-      <div class="splash-info">
-        <span>DEVELOPER · LAWANGEN</span>
-        <span>ADMIN · ROKHAN SYED</span>
-      </div>
-
+      <!-- LOADER -->
       <div class="loader">
         <span></span>
       </div>
@@ -75,19 +89,32 @@
   </section>
 
 
-  <!-- LOGIN -->
-  <section id="loginScreen" class="screen hidden">
+  <!-- =========================================
+       ACCESS SCREEN
+  ========================================== -->
+
+  <section
+    id="loginScreen"
+    class="screen hidden"
+  >
 
     <div class="login-card glass">
 
-      <div id="loginLogo" class="mini-logo"></div>
+      <!-- LOGO -->
+      <div
+        id="loginLogo"
+        class="mini-logo"
+      >
+        
+      </div>
 
+      <!-- BRAND -->
       <div class="login-brand">
         LAWANGEN
       </div>
 
       <div class="login-role">
-        ADMIN / SELLER LOGIN
+        ADMIN PANEL
       </div>
 
       <div class="admin-name gradient-text">
@@ -95,13 +122,97 @@
       </div>
 
       <div class="login-developed">
-        Specially developed this admin panel for
+        Specially Created for
         <strong>ROKHAN SYED</strong>
       </div>
 
+
+      <!-- ADMIN LOGIN -->
+      <button
+        id="adminAccessButton"
+        class="access-option admin-access"
+        type="button"
+      >
+
+        <span class="access-icon">
+          🔐
+        </span>
+
+        <div>
+          <strong>ADMIN LOGIN</strong>
+          <small>Login with your Admin Key</small>
+        </div>
+
+        <b>›</b>
+
+      </button>
+
+
+      <!-- DEVELOPER LOGIN -->
+      <button
+        id="developerLoginButton"
+        class="access-option developer-access"
+        type="button"
+      >
+
+        <span class="access-icon">
+          ⚡
+        </span>
+
+        <div>
+          <strong>DEVELOPER LOGIN</strong>
+          <small>Only developer can enter from this</small>
+        </div>
+
+        <b>›</b>
+
+      </button>
+
+
+      <div class="developer-credit">
+        DEVELOPER
+        <strong>LAWANGEN</strong>
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =========================================
+       ADMIN LOGIN FORM
+  ========================================== -->
+
+  <section
+    id="adminLoginForm"
+    class="screen hidden"
+  >
+
+    <div class="login-card glass">
+
+      <div
+        id="adminFormLogo"
+        class="mini-logo"
+      >
+        
+      </div>
+
+      <div class="login-brand">
+        LAWANGEN
+      </div>
+
+      <div class="login-role">
+        ADMIN LOGIN
+      </div>
+
+      <div class="admin-name gradient-text">
+        ROKHAN SYED
+      </div>
+
       <p class="login-description">
-        Authorized reseller access
+        Enter your authorized Admin Key
       </p>
+
 
       <div class="input-box">
 
@@ -114,57 +225,60 @@
           autocomplete="off"
         >
 
-        <button id="showKey" type="button">
+        <button
+          id="showKey"
+          type="button"
+        >
           ◉
         </button>
 
       </div>
 
-      <button id="loginButton" class="primary-button">
+
+      <button
+        id="loginButton"
+        class="primary-button"
+        type="button"
+      >
         <span>ENTER ADMIN PANEL</span>
         <b>→</b>
       </button>
 
-      <div id="loginMessage" class="login-message"></div>
 
+      <div
+        id="loginMessage"
+        class="login-message"
+      ></div>
 
-      <!-- DEVELOPER OPTION -->
-      <div class="developer-divider">
-        <span>OR</span>
-      </div>
 
       <button
-        id="developerLoginButton"
-        class="developer-login-button"
+        id="backToAccess"
+        class="back-login-button"
         type="button"
       >
-        <span>⌘</span>
-
-        <div>
-          <strong>DEVELOPER LOGIN</strong>
-          <small>Only developer can enter this interface</small>
-        </div>
-
-        <b>›</b>
+        ← BACK TO ACCESS
       </button>
-
-
-      <div class="developer-credit">
-        ᴅᴇᴠᴇʟᴏᴘᴇʀ
-        <strong>LAWANGEN</strong>
-      </div>
 
     </div>
 
   </section>
 
 
-  <!-- DEVELOPER LOGIN -->
-  <section id="developerLoginScreen" class="screen hidden">
+  <!-- =========================================
+       DEVELOPER LOGIN FORM
+  ========================================== -->
+
+  <section
+    id="developerLoginScreen"
+    class="screen hidden"
+  >
 
     <div class="login-card glass">
 
-      <div id="developerLoginLogo" class="mini-logo">
+      <div
+        id="developerLoginLogo"
+        class="mini-logo"
+      >
         
       </div>
 
@@ -173,7 +287,7 @@
       </div>
 
       <div class="login-role">
-        DEVELOPER INTERFACE
+        DEVELOPER LOGIN
       </div>
 
       <div class="admin-name gradient-text">
@@ -183,6 +297,7 @@
       <p class="login-description">
         Only developer can enter this interface
       </p>
+
 
       <div class="input-box">
 
@@ -195,31 +310,38 @@
           autocomplete="off"
         >
 
-        <button id="showDeveloperToken" type="button">
+        <button
+          id="showDeveloperToken"
+          type="button"
+        >
           ◉
         </button>
 
       </div>
 
+
       <button
         id="developerEnterButton"
         class="primary-button"
+        type="button"
       >
         <span>ENTER DEVELOPER PANEL</span>
         <b>→</b>
       </button>
+
 
       <div
         id="developerLoginMessage"
         class="login-message"
       ></div>
 
+
       <button
         id="backToAdminLogin"
         class="back-login-button"
         type="button"
       >
-        ← BACK TO ADMIN / SELLER LOGIN
+        ← BACK TO ACCESS
       </button>
 
     </div>
@@ -227,20 +349,36 @@
   </section>
 
 
-  <!-- MAIN APP -->
-  <section id="appScreen" class="app-screen hidden">
+  <!-- =========================================
+       MAIN APP
+  ========================================== -->
 
+  <section
+    id="appScreen"
+    class="app-screen hidden"
+  >
+
+    <!-- TOP BAR -->
     <header class="topbar">
 
       <div>
-        <div class="top-brand">LAWANGEN</div>
+        <div class="top-brand">
+          LAWANGEN
+        </div>
 
-        <div id="topRole" class="top-role">
+        <div
+          id="topRole"
+          class="top-role"
+        >
           RESELLER CONTROL
         </div>
       </div>
 
-      <button id="profileButton" class="profile-button">
+      <button
+        id="profileButton"
+        class="profile-button"
+        type="button"
+      >
         RS
       </button>
 
@@ -248,7 +386,10 @@
 
 
     <!-- HOME -->
-    <main id="homePage" class="page active">
+    <main
+      id="homePage"
+      class="page active"
+    >
 
       <div class="welcome">
 
@@ -296,7 +437,11 @@
       </div>
 
 
-      <button id="generateFromHome" class="generate-button">
+      <button
+        id="generateFromHome"
+        class="generate-button"
+        type="button"
+      >
 
         <span class="plus">＋</span>
 
@@ -312,29 +457,50 @@
 
       <div class="section-title">
         <span>RECENT ACTIVITY</span>
-        <button id="viewKeys">VIEW ALL</button>
+        <button
+          id="viewKeys"
+          type="button"
+        >
+          VIEW ALL
+        </button>
       </div>
 
-      <div id="activityList" class="activity-list glass"></div>
+      <div
+        id="activityList"
+        class="activity-list glass"
+      ></div>
 
     </main>
 
 
     <!-- KEYS -->
-    <main id="keysPage" class="page">
+    <main
+      id="keysPage"
+      class="page"
+    >
 
       <div class="page-heading">
 
         <div>
-          <div class="small-label">MANAGEMENT</div>
-          <h2>Access Keys</h2>
+          <div class="small-label">
+            MANAGEMENT
+          </div>
+
+          <h2>
+            Access Keys
+          </h2>
         </div>
 
-        <button id="generateKeyButton" class="round-button">
+        <button
+          id="generateKeyButton"
+          class="round-button"
+          type="button"
+        >
           ＋
         </button>
 
       </div>
+
 
       <div class="search-box glass">
 
@@ -347,22 +513,35 @@
 
       </div>
 
-      <div id="keyList" class="key-list"></div>
+
+      <div
+        id="keyList"
+        class="key-list"
+      ></div>
 
     </main>
 
 
     <!-- USERS -->
-    <main id="usersPage" class="page">
+    <main
+      id="usersPage"
+      class="page"
+    >
 
       <div class="page-heading">
 
         <div>
-          <div class="small-label">MANAGEMENT</div>
-          <h2>Users</h2>
+          <div class="small-label">
+            MANAGEMENT
+          </div>
+
+          <h2>
+            Users
+          </h2>
         </div>
 
       </div>
+
 
       <div class="user-summary glass">
 
@@ -373,46 +552,77 @@
 
         <div>
           <small>ACTIVE</small>
-          <strong id="activeUserCount" class="online">0</strong>
+          <strong
+            id="activeUserCount"
+            class="online"
+          >
+            0
+          </strong>
         </div>
 
         <div>
           <small>EXPIRED</small>
-          <strong id="expiredUserCount">0</strong>
+          <strong id="expiredUserCount">
+            0
+          </strong>
         </div>
 
       </div>
 
-      <div id="userList" class="user-list"></div>
+
+      <div
+        id="userList"
+        class="user-list"
+      ></div>
 
     </main>
 
 
-    <!-- SERVICES -->
-    <main id="gamesPage" class="page">
+    <!-- GAMES -->
+    <main
+      id="gamesPage"
+      class="page"
+    >
 
       <div class="page-heading">
 
         <div>
-          <div class="small-label">SERVICES</div>
-          <h2>Games</h2>
+          <div class="small-label">
+            SERVICES
+          </div>
+
+          <h2>
+            Games
+          </h2>
         </div>
 
       </div>
 
-      <div id="gameList" class="game-list"></div>
+
+      <div
+        id="gameList"
+        class="game-list"
+      ></div>
 
     </main>
 
 
     <!-- SETTINGS -->
-    <main id="settingsPage" class="page">
+    <main
+      id="settingsPage"
+      class="page"
+    >
 
       <div class="page-heading">
 
         <div>
-          <div class="small-label">SYSTEM</div>
-          <h2>Settings</h2>
+          <div class="small-label">
+            SYSTEM
+          </div>
+
+          <h2>
+            Settings
+          </h2>
         </div>
 
       </div>
@@ -420,7 +630,10 @@
 
       <div class="profile-card glass">
 
-        <div id="profileAvatar" class="large-avatar">
+        <div
+          id="profileAvatar"
+          class="large-avatar"
+        >
           RS
         </div>
 
@@ -439,8 +652,11 @@
       </div>
 
 
-      <!-- DEVELOPER ONLY -->
-      <div id="developerTools" class="developer-tools hidden">
+      <!-- DEVELOPER TOOLS -->
+      <div
+        id="developerTools"
+        class="developer-tools hidden"
+      >
 
         <div class="settings-group">
 
@@ -470,6 +686,7 @@
             <button
               id="createAdminKeyButton"
               class="small-button"
+              type="button"
             >
               CREATE
             </button>
@@ -482,13 +699,16 @@
             class="new-admin-key hidden"
           >
 
-            <small>NEW ADMIN KEY</small>
+            <small>
+              NEW ADMIN KEY
+            </small>
 
             <strong id="newAdminKey"></strong>
 
             <button
               id="copyAdminKeyButton"
               class="small-button"
+              type="button"
             >
               COPY KEY
             </button>
@@ -508,13 +728,19 @@
           <div class="setting-row glass">
 
             <div>
-              <strong>Application Logo</strong>
-              <small>Developer only</small>
+              <strong>
+                Application Logo
+              </strong>
+
+              <small>
+                Developer only
+              </small>
             </div>
 
             <button
               id="selectLogoButton"
               class="small-button"
+              type="button"
             >
               SELECT
             </button>
@@ -528,6 +754,7 @@
             accept="image/png,image/jpeg,image/webp,image/*"
             hidden
           >
+
 
           <button
             id="removeLogoButton"
@@ -548,14 +775,22 @@
           BRANDING
         </div>
 
+
         <div class="setting-row glass">
 
           <div>
-            <strong>Developer</strong>
-            <small>Application owner</small>
+            <strong>
+              Developer
+            </strong>
+
+            <small>
+              Application owner
+            </small>
           </div>
 
-          <span>LAWANGEN</span>
+          <span>
+            LAWANGEN
+          </span>
 
         </div>
 
@@ -563,11 +798,18 @@
         <div class="setting-row glass">
 
           <div>
-            <strong>Administrator</strong>
-            <small>Current reseller</small>
+            <strong>
+              Administrator
+            </strong>
+
+            <small>
+              Current reseller
+            </small>
           </div>
 
-          <span>ROKHAN SYED</span>
+          <span>
+            ROKHAN SYED
+          </span>
 
         </div>
 
@@ -580,11 +822,17 @@
           EXPERIENCE
         </div>
 
+
         <div class="setting-row glass">
 
           <div>
-            <strong>Sound Effects</strong>
-            <small>Interface sounds</small>
+            <strong>
+              Sound Effects
+            </strong>
+
+            <small>
+              Interface sounds
+            </small>
           </div>
 
           <label class="switch">
@@ -605,8 +853,13 @@
         <div class="setting-row glass">
 
           <div>
-            <strong>Animations</strong>
-            <small>Interface animations</small>
+            <strong>
+              Animations
+            </strong>
+
+            <small>
+              Interface animations
+            </small>
           </div>
 
           <label class="switch">
@@ -635,6 +888,7 @@
         <button
           id="logoutButton"
           class="danger-button"
+          type="button"
         >
           LOG OUT
         </button>
@@ -647,7 +901,7 @@
         LAWANGEN ADMIN PANEL<br>
 
         <span>
-          ᴅᴇᴠᴇʟᴏᴘᴇʀ · LAWANGEN
+          DEVELOPER · LAWANGEN
         </span>
 
       </div>
@@ -658,27 +912,47 @@
     <!-- BOTTOM NAV -->
     <nav class="bottom-nav glass">
 
-      <button class="nav-item active" data-page="homePage">
+      <button
+        class="nav-item active"
+        data-page="homePage"
+        type="button"
+      >
         <span>⌂</span>
         <small>Home</small>
       </button>
 
-      <button class="nav-item" data-page="keysPage">
+      <button
+        class="nav-item"
+        data-page="keysPage"
+        type="button"
+      >
         <span>⌁</span>
         <small>Keys</small>
       </button>
 
-      <button class="nav-item" data-page="usersPage">
+      <button
+        class="nav-item"
+        data-page="usersPage"
+        type="button"
+      >
         <span>♙</span>
         <small>Users</small>
       </button>
 
-      <button class="nav-item" data-page="gamesPage">
+      <button
+        class="nav-item"
+        data-page="gamesPage"
+        type="button"
+      >
         <span>◈</span>
         <small>Games</small>
       </button>
 
-      <button class="nav-item" data-page="settingsPage">
+      <button
+        class="nav-item"
+        data-page="settingsPage"
+        type="button"
+      >
         <span>⚙</span>
         <small>Settings</small>
       </button>
@@ -688,14 +962,24 @@
   </section>
 
 
-  <!-- GENERATE USER KEY MODAL -->
-  <div id="keyModal" class="modal hidden">
+  <!-- =========================================
+       GENERATE KEY MODAL
+  ========================================== -->
+
+  <div
+    id="keyModal"
+    class="modal hidden"
+  >
 
     <div class="modal-backdrop"></div>
 
     <div class="modal-card glass">
 
-      <button id="closeModal" class="modal-close">
+      <button
+        id="closeModal"
+        class="modal-close"
+        type="button"
+      >
         ×
       </button>
 
@@ -703,32 +987,58 @@
         🔑
       </div>
 
-      <h2>Generate Key</h2>
+      <h2>
+        Generate Key
+      </h2>
 
       <p>
         Create a new user access key.
       </p>
 
-      <label>GAME / SERVICE</label>
+
+      <label>
+        GAME / SERVICE
+      </label>
 
       <select id="gameSelect">
-        <option value="">Loading services...</option>
+        <option value="">
+          Loading services...
+        </option>
       </select>
 
-      <label>EXPIRY</label>
+
+      <label>
+        EXPIRY
+      </label>
 
       <select id="expirySelect">
 
-        <option value="1">1 Day</option>
-        <option value="7">7 Days</option>
-        <option value="30" selected>30 Days</option>
-        <option value="90">90 Days</option>
+        <option value="1">
+          1 Day
+        </option>
+
+        <option value="7">
+          7 Days
+        </option>
+
+        <option
+          value="30"
+          selected
+        >
+          30 Days
+        </option>
+
+        <option value="90">
+          90 Days
+        </option>
 
       </select>
+
 
       <button
         id="createKeyButton"
         class="primary-button"
+        type="button"
       >
         CREATE KEY
         <b>→</b>
@@ -739,15 +1049,16 @@
   </div>
 
 
-  <!-- MAIN JAVASCRIPT -->
-  <script src="app.js"></script>
+  <!-- JAVASCRIPT -->
+  <script src="/app.js"></script>
 
 
   <!-- SERVICE WORKER -->
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("/sw.js")
+        navigator.serviceWorker
+          .register("/sw.js")
           .catch(error => {
             console.error(
               "LAWANGEN Service Worker:",
