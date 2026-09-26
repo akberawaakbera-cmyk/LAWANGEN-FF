@@ -1,1 +1,201 @@
-shhshs
+/* =========================
+   DEVELOPER LOGIN
+========================= */
+
+.developer-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 22px 0 12px;
+  color: #555b64;
+  font-size: 8px;
+  letter-spacing: 2px;
+}
+
+.developer-divider::before,
+.developer-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(255,255,255,.08);
+}
+
+.developer-login-button {
+  width: 100%;
+  min-height: 62px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  border-radius: 17px;
+  background: rgba(165,107,255,.07);
+  border: 1px solid rgba(165,107,255,.16);
+}
+
+.developer-login-button > span {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: rgba(165,107,255,.12);
+  color: var(--purple);
+  font-size: 17px;
+}
+
+.developer-login-button div {
+  flex: 1;
+}
+
+.developer-login-button strong,
+.developer-login-button small {
+  display: block;
+}
+
+.developer-login-button strong {
+  font-size: 10px;
+}
+
+.developer-login-button small {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 8px;
+}
+
+.developer-login-button > b {
+  color: var(--muted);
+  font-size: 22px;
+}
+
+.back-login-button {
+  width: 100%;
+  margin-top: 17px;
+  height: 45px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.05);
+  color: var(--muted);
+  font-size: 9px;
+  letter-spacing: .5px;
+}
+
+
+/* =========================
+   SPLASH LOGO
+========================= */
+
+.apple-mark {
+  width: 92px;
+  height: 92px;
+  margin: 0 auto 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 68px;
+}
+
+.apple-mark img {
+  width: 92px;
+  height: 92px;
+  object-fit: contain;
+  border-radius: 22px;
+  display: block;
+}
+
+.mini-logo {
+  width: 58px;
+  height: 58px;
+  margin: 0 auto 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 38px;
+}
+
+.mini-logo img {
+  width: 58px;
+  height: 58px;
+  object-fit: contain;
+  border-radius: 16px;
+}
+
+.splash-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 15px;
+  color: #696f79;
+  font-size: 8px;
+  letter-spacing: 1.5px;
+}
+
+
+/* =========================
+   DEVELOPER TOOLS
+========================= */
+
+.developer-tools {
+  margin-top: 2px;
+}
+
+.developer-create-card {
+  min-height: 67px;
+  padding: 12px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  border: 1px solid rgba(165,107,255,.15);
+}
+
+.developer-tool-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: rgba(165,107,255,.10);
+}
+
+.developer-tool-content {
+  flex: 1;
+}
+
+.developer-tool-content strong,
+.developer-tool-content small {
+  display: block;
+}
+
+.developer-tool-content strong {
+  font-size: 11px;
+}
+
+.developer-tool-content small {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 8px;
+}
+
+.new-admin-key {
+  margin-top: 9px;
+  padding: 14px;
+  border-radius: 17px;
+  background: rgba(53,255,155,.06);
+  border: 1px solid rgba(53,255,155,.12);
+}
+
+.new-admin-key > small {
+  display: block;
+  color: var(--muted);
+  font-size: 8px;
+  letter-spacing: 1.5px;
+}
+
+.new-admin-key strong {
+  display: block;
+  margin: 9px 0;
+  font-family: monospace;
+  font-size: 12px;
+  color: var(--green);
+  word-break: break-all;
+}
