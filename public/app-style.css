@@ -1,0 +1,1735 @@
+/* =========================================================
+   LAWANGEN ADMIN PANEL
+   PREMIUM INTERNAL APP UI
+   This file only styles the main application panel.
+   Splash + Login remain controlled by style.css
+========================================================= */
+
+#appScreen {
+  --app-bg: #05070a;
+  --app-card: rgba(255,255,255,.055);
+  --app-card-strong: rgba(255,255,255,.075);
+  --app-border: rgba(255,255,255,.10);
+  --app-border-soft: rgba(255,255,255,.065);
+  --app-text: #f5f7fa;
+  --app-muted: #8d96a3;
+  --app-dim: #606975;
+  --app-accent: #ffffff;
+  --app-danger: #ff5263;
+  --app-success: #42e695;
+  --app-radius: 22px;
+  --app-radius-small: 15px;
+  color: var(--app-text);
+}
+
+
+/* =========================================================
+   APP BASE
+========================================================= */
+
+#appScreen.app-screen {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  min-height: 100dvh;
+  overflow: hidden;
+  background:
+    radial-gradient(
+      circle at 85% 0%,
+      rgba(255,255,255,.055),
+      transparent 32%
+    ),
+    radial-gradient(
+      circle at 0% 55%,
+      rgba(255,255,255,.035),
+      transparent 35%
+    ),
+    var(--app-bg);
+  z-index: 20;
+}
+
+#appScreen * {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#appScreen button,
+#appScreen input,
+#appScreen select {
+  font: inherit;
+}
+
+
+/* =========================================================
+   TOP BAR
+========================================================= */
+
+#appScreen .topbar {
+  position: relative;
+  z-index: 50;
+
+  height: calc(76px + env(safe-area-inset-top));
+  padding:
+    calc(17px + env(safe-area-inset-top))
+    18px
+    10px;
+
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+
+  background: rgba(5,7,10,.78);
+  border-bottom: 1px solid var(--app-border-soft);
+
+  backdrop-filter: blur(26px) saturate(145%);
+  -webkit-backdrop-filter: blur(26px) saturate(145%);
+}
+
+#appScreen .top-brand {
+  font-size: 18px;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: .16em;
+}
+
+#appScreen .top-role {
+  margin-top: 6px;
+
+  color: var(--app-muted);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .18em;
+}
+
+#appScreen .profile-button {
+  width: 40px;
+  height: 40px;
+
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 13px;
+
+  color: #fff;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255,255,255,.16),
+      rgba(255,255,255,.045)
+    );
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.12),
+    0 10px 28px rgba(0,0,0,.25);
+
+  font-size: 12px;
+  font-weight: 900;
+
+  cursor: pointer;
+  transition: transform .18s ease, border-color .18s ease;
+}
+
+#appScreen .profile-button:active {
+  transform: scale(.92);
+}
+
+
+/* =========================================================
+   PAGE CONTAINER
+========================================================= */
+
+#appScreen .page {
+  position: absolute;
+  inset: calc(76px + env(safe-area-inset-top)) 0
+         calc(82px + env(safe-area-inset-bottom)) 0;
+
+  padding:
+    22px
+    18px
+    40px;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(8px);
+
+  transition:
+    opacity .24s ease,
+    transform .24s ease,
+    visibility .24s ease;
+}
+
+#appScreen .page.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+
+/* =========================================================
+   WELCOME
+========================================================= */
+
+#appScreen .welcome {
+  margin-bottom: 22px;
+}
+
+#appScreen .small-label {
+  color: var(--app-dim);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+}
+
+#appScreen .welcome h1 {
+  margin: 7px 0 5px;
+
+  font-size: clamp(28px, 8vw, 38px);
+  line-height: 1.02;
+  letter-spacing: -.045em;
+  font-weight: 900;
+}
+
+#appScreen .welcome h1 span {
+  color: #7f8996;
+}
+
+#appScreen .welcome p {
+  margin: 0;
+
+  color: var(--app-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   STATS
+========================================================= */
+
+#appScreen .stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+#appScreen .stat-card {
+  min-height: 128px;
+  padding: 17px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255,255,255,.075),
+      rgba(255,255,255,.025)
+    );
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.055),
+    0 15px 40px rgba(0,0,0,.20);
+}
+
+#appScreen .stat-icon {
+  width: 34px;
+  height: 34px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 11px;
+
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.07);
+
+  font-size: 16px;
+}
+
+#appScreen .stat-card small {
+  margin-top: 8px;
+
+  color: var(--app-muted);
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: .14em;
+}
+
+#appScreen .stat-card strong {
+  margin-top: 2px;
+
+  font-size: 25px;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: -.04em;
+}
+
+#appScreen .stat-card strong.online {
+  font-size: 15px;
+  letter-spacing: .06em;
+}
+
+#appScreen .online {
+  color: var(--app-success) !important;
+}
+
+
+/* =========================================================
+   GENERATE BUTTON
+========================================================= */
+
+#appScreen .generate-button {
+  width: 100%;
+  min-height: 72px;
+
+  padding: 12px 15px;
+
+  display: flex;
+  align-items: center;
+  gap: 13px;
+
+  border: 1px solid rgba(255,255,255,.13);
+  border-radius: 20px;
+
+  color: #fff;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,.13),
+      rgba(255,255,255,.045)
+    );
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.10),
+    0 15px 35px rgba(0,0,0,.22);
+
+  cursor: pointer;
+  text-align: left;
+
+  transition:
+    transform .18s ease,
+    border-color .18s ease,
+    background .18s ease;
+}
+
+#appScreen .generate-button:active {
+  transform: scale(.975);
+}
+
+#appScreen .generate-button .plus {
+  width: 42px;
+  height: 42px;
+
+  flex: 0 0 42px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 14px;
+
+  background: #fff;
+  color: #05070a;
+
+  font-size: 25px;
+  font-weight: 500;
+}
+
+#appScreen .generate-button div {
+  flex: 1;
+}
+
+#appScreen .generate-button strong {
+  display: block;
+
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .02em;
+}
+
+#appScreen .generate-button small {
+  display: block;
+  margin-top: 4px;
+
+  color: var(--app-muted);
+  font-size: 10px;
+}
+
+#appScreen .generate-button b {
+  color: #87909c;
+  font-size: 25px;
+  font-weight: 300;
+}
+
+
+/* =========================================================
+   SECTION TITLE
+========================================================= */
+
+#appScreen .section-title {
+  margin: 28px 2px 11px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#appScreen .section-title span {
+  color: #8b949f;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .17em;
+}
+
+#appScreen .section-title button {
+  border: 0;
+  background: none;
+  color: #fff;
+
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .12em;
+
+  cursor: pointer;
+}
+
+
+/* =========================================================
+   ACTIVITY
+========================================================= */
+
+#appScreen .activity-list {
+  overflow: hidden;
+
+  border: 1px solid var(--app-border);
+  border-radius: 20px;
+
+  background: rgba(255,255,255,.035);
+}
+
+#appScreen .activity-list:empty {
+  min-height: 90px;
+}
+
+#appScreen .activity-item,
+#appScreen .activity-list > div {
+  padding: 14px 15px;
+
+  border-bottom: 1px solid rgba(255,255,255,.055);
+}
+
+#appScreen .activity-list > div:last-child {
+  border-bottom: 0;
+}
+
+
+/* =========================================================
+   PAGE HEADINGS
+========================================================= */
+
+#appScreen .page-heading {
+  margin-bottom: 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#appScreen .page-heading h2 {
+  margin: 6px 0 0;
+
+  font-size: 29px;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: -.045em;
+}
+
+#appScreen .round-button {
+  width: 45px;
+  height: 45px;
+
+  border: 1px solid rgba(255,255,255,.13);
+  border-radius: 15px;
+
+  color: #05070a;
+  background: #fff;
+
+  font-size: 24px;
+  font-weight: 400;
+
+  cursor: pointer;
+
+  box-shadow: 0 12px 28px rgba(0,0,0,.24);
+  transition: transform .18s ease;
+}
+
+#appScreen .round-button:active {
+  transform: scale(.9) rotate(5deg);
+}
+
+
+/* =========================================================
+   SEARCH
+========================================================= */
+
+#appScreen .search-box {
+  height: 50px;
+
+  margin-bottom: 14px;
+  padding: 0 15px;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  border: 1px solid var(--app-border);
+  border-radius: 16px;
+
+  background: rgba(255,255,255,.045);
+}
+
+#appScreen .search-box span {
+  color: #7d8691;
+  font-size: 23px;
+}
+
+#appScreen .search-box input {
+  width: 100%;
+
+  border: 0;
+  outline: 0;
+
+  color: #fff;
+  background: transparent;
+
+  font-size: 13px;
+}
+
+#appScreen .search-box input::placeholder {
+  color: #69727d;
+}
+
+
+/* =========================================================
+   KEY / USER LIST
+========================================================= */
+
+#appScreen .key-list,
+#appScreen .user-list,
+#appScreen .game-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#appScreen .list-item,
+#appScreen .key-item,
+#appScreen .user-item {
+  min-height: 74px;
+  padding: 14px;
+
+  border: 1px solid var(--app-border);
+  border-radius: 19px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255,255,255,.065),
+      rgba(255,255,255,.025)
+    );
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.045),
+    0 12px 28px rgba(0,0,0,.14);
+}
+
+
+/* =========================================================
+   USER SUMMARY
+========================================================= */
+
+#appScreen .user-summary {
+  margin-bottom: 15px;
+  padding: 18px;
+
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 8px;
+
+  border: 1px solid var(--app-border);
+  border-radius: 20px;
+
+  background: rgba(255,255,255,.045);
+}
+
+#appScreen .user-summary > div {
+  min-width: 0;
+  text-align: center;
+}
+
+#appScreen .user-summary small {
+  display: block;
+
+  color: var(--app-muted);
+  font-size: 7px;
+  font-weight: 900;
+  letter-spacing: .12em;
+}
+
+#appScreen .user-summary strong {
+  display: block;
+  margin-top: 7px;
+
+  font-size: 21px;
+  font-weight: 900;
+}
+
+
+/* =========================================================
+   GAME CARDS
+========================================================= */
+
+#appScreen .game-list {
+  gap: 12px;
+}
+
+#appScreen .game-card {
+  position: relative;
+
+  min-height: 102px;
+  padding: 15px;
+
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 22px;
+
+  overflow: hidden;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,.075),
+      rgba(255,255,255,.025)
+    );
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.055),
+    0 14px 35px rgba(0,0,0,.20);
+
+  transition:
+    transform .18s ease,
+    border-color .18s ease;
+}
+
+#appScreen .game-card:active {
+  transform: scale(.985);
+}
+
+#appScreen .game-card::after {
+  content: "";
+
+  position: absolute;
+  width: 100px;
+  height: 100px;
+
+  right: -45px;
+  top: -50px;
+
+  border-radius: 50%;
+
+  background: rgba(255,255,255,.035);
+  pointer-events: none;
+}
+
+#appScreen .game-logo,
+#appScreen .game-logo-placeholder {
+  width: 60px;
+  height: 60px;
+
+  flex: 0 0 60px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 17px;
+
+  overflow: hidden;
+
+  border: 1px solid rgba(255,255,255,.12);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255,255,255,.12),
+      rgba(255,255,255,.035)
+    );
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    0 10px 25px rgba(0,0,0,.25);
+
+  color: #fff;
+  font-size: 17px;
+  font-weight: 900;
+}
+
+#appScreen .game-logo img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+}
+
+#appScreen .game-info {
+  min-width: 0;
+  flex: 1;
+}
+
+#appScreen .game-info strong {
+  display: block;
+
+  color: #fff;
+  font-size: 14px;
+  font-weight: 900;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#appScreen .game-info small {
+  display: block;
+  margin-top: 5px;
+
+  color: var(--app-muted);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+#appScreen .game-status {
+  margin-top: 9px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+
+  color: var(--app-success);
+  font-size: 7px;
+  font-weight: 900;
+  letter-spacing: .12em;
+}
+
+#appScreen .game-status::before {
+  content: "";
+
+  width: 5px;
+  height: 5px;
+
+  border-radius: 50%;
+  background: currentColor;
+
+  box-shadow: 0 0 10px currentColor;
+}
+
+
+/* =========================================================
+   SETTINGS
+========================================================= */
+
+#appScreen .settings-group {
+  margin-top: 23px;
+}
+
+#appScreen .settings-group:first-of-type {
+  margin-top: 0;
+}
+
+#appScreen .settings-title {
+  margin: 0 5px 9px;
+
+  color: #747e89;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: .18em;
+}
+
+#appScreen .setting-row,
+#appScreen .settings-row {
+  width: 100%;
+  min-height: 69px;
+
+  margin-bottom: 9px;
+  padding: 14px 15px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 18px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255,255,255,.065),
+      rgba(255,255,255,.025)
+    );
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.04),
+    0 10px 28px rgba(0,0,0,.14);
+
+  transition:
+    transform .18s ease,
+    border-color .18s ease;
+}
+
+#appScreen .setting-row:active {
+  transform: scale(.985);
+}
+
+#appScreen .setting-row > div {
+  min-width: 0;
+}
+
+#appScreen .setting-row strong {
+  display: block;
+
+  color: #f4f5f7;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+#appScreen .setting-row small {
+  display: block;
+  margin-top: 4px;
+
+  color: var(--app-muted);
+  font-size: 9px;
+}
+
+#appScreen .setting-row > span {
+  color: #adb4bd;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+
+/* =========================================================
+   PROFILE CARD
+========================================================= */
+
+#appScreen .profile-card {
+  min-height: 92px;
+
+  padding: 16px;
+
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 22px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255,255,255,.08),
+      rgba(255,255,255,.025)
+    );
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.055),
+    0 16px 35px rgba(0,0,0,.18);
+}
+
+#appScreen .large-avatar {
+  width: 56px;
+  height: 56px;
+
+  flex: 0 0 56px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 18px;
+
+  color: #05070a;
+  background: #fff;
+
+  font-size: 14px;
+  font-weight: 950;
+
+  box-shadow:
+    0 10px 28px rgba(0,0,0,.28);
+}
+
+#appScreen .profile-name {
+  font-size: 14px;
+  font-weight: 900;
+}
+
+#appScreen .profile-card small {
+  display: block;
+  margin-top: 5px;
+
+  color: var(--app-muted);
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+
+
+/* =========================================================
+   DEVELOPER TOOLS
+========================================================= */
+
+#appScreen .developer-tools {
+  margin-top: 24px;
+  padding: 14px;
+
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 24px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255,255,255,.055),
+      rgba(255,255,255,.018)
+    );
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.045),
+    0 18px 45px rgba(0,0,0,.22);
+}
+
+#appScreen .developer-tools .settings-group {
+  margin-top: 10px;
+}
+
+#appScreen .developer-tools .settings-group:first-child {
+  margin-top: 0;
+}
+
+#appScreen .developer-tools .settings-title {
+  color: #fff;
+}
+
+#appScreen .developer-create-card {
+  min-height: 76px;
+
+  padding: 12px;
+
+  display: flex;
+  align-items: center;
+  gap: 11px;
+
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 18px;
+
+  background: rgba(255,255,255,.035);
+}
+
+#appScreen .developer-tool-icon {
+  width: 40px;
+  height: 40px;
+
+  flex: 0 0 40px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 13px;
+
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.08);
+
+  font-size: 17px;
+}
+
+#appScreen .developer-tool-content {
+  flex: 1;
+  min-width: 0;
+}
+
+#appScreen .developer-tool-content strong {
+  display: block;
+
+  color: #fff;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+#appScreen .developer-tool-content small {
+  display: block;
+  margin-top: 4px;
+
+  color: #737d88;
+  font-size: 8px;
+}
+
+#appScreen .small-button {
+  min-height: 36px;
+
+  padding: 0 13px;
+
+  border: 1px solid rgba(255,255,255,.13);
+  border-radius: 11px;
+
+  color: #05070a;
+  background: #fff;
+
+  font-size: 8px;
+  font-weight: 950;
+  letter-spacing: .08em;
+
+  cursor: pointer;
+
+  transition: transform .16s ease;
+}
+
+#appScreen .small-button:active {
+  transform: scale(.93);
+}
+
+#appScreen .new-admin-key {
+  margin-top: 9px;
+  padding: 13px;
+
+  border: 1px solid rgba(66,230,149,.20);
+  border-radius: 16px;
+
+  background: rgba(66,230,149,.045);
+}
+
+#appScreen .new-admin-key > small {
+  display: block;
+
+  color: #6f7b86;
+  font-size: 7px;
+  font-weight: 900;
+  letter-spacing: .16em;
+}
+
+#appScreen .new-admin-key > strong {
+  display: block;
+
+  margin: 8px 0;
+
+  color: #fff;
+
+  font-size: 11px;
+  line-height: 1.5;
+
+  word-break: break-all;
+}
+
+
+/* =========================================================
+   LOGO CONTROLS
+========================================================= */
+
+#appScreen .file-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 38px;
+  padding: 0 13px;
+
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.12);
+
+  color: #05070a;
+  background: #fff;
+
+  font-size: 8px;
+  font-weight: 950;
+  letter-spacing: .08em;
+
+  cursor: pointer;
+}
+
+#appScreen .logo-preview {
+  width: 74px;
+  height: 74px;
+
+  margin-bottom: 11px;
+
+  display: grid;
+  place-items: center;
+
+  overflow: hidden;
+
+  border-radius: 20px;
+
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.05);
+}
+
+#appScreen .logo-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+
+/* =========================================================
+   DANGER BUTTON
+========================================================= */
+
+#appScreen .danger-button {
+  width: 100%;
+  min-height: 49px;
+
+  padding: 0 15px;
+
+  border: 1px solid rgba(255,82,99,.20);
+  border-radius: 15px;
+
+  color: #ff6a77;
+
+  background: rgba(255,82,99,.055);
+
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .13em;
+
+  cursor: pointer;
+
+  transition:
+    transform .17s ease,
+    background .17s ease;
+}
+
+#appScreen .danger-button:active {
+  transform: scale(.975);
+  background: rgba(255,82,99,.10);
+}
+
+
+/* =========================================================
+   SWITCH
+========================================================= */
+
+#appScreen .switch {
+  position: relative;
+
+  width: 48px;
+  height: 28px;
+
+  flex: 0 0 48px;
+
+  cursor: pointer;
+}
+
+#appScreen .switch input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+#appScreen .switch span {
+  position: absolute;
+  inset: 0;
+
+  border-radius: 999px;
+
+  background: rgba(255,255,255,.10);
+  border: 1px solid rgba(255,255,255,.10);
+
+  transition: background .2s ease;
+}
+
+#appScreen .switch span::after {
+  content: "";
+
+  position: absolute;
+
+  width: 20px;
+  height: 20px;
+
+  top: 3px;
+  left: 3px;
+
+  border-radius: 50%;
+
+  background: #7b838d;
+
+  box-shadow: 0 3px 9px rgba(0,0,0,.35);
+
+  transition:
+    transform .2s ease,
+    background .2s ease;
+}
+
+#appScreen .switch input:checked + span {
+  background: rgba(255,255,255,.22);
+}
+
+#appScreen .switch input:checked + span::after {
+  transform: translateX(20px);
+  background: #fff;
+}
+
+
+/* =========================================================
+   MODAL
+========================================================= */
+
+#appScreen .modal {
+  position: fixed;
+  inset: 0;
+
+  z-index: 500;
+
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+
+  padding:
+    15px
+    15px
+    calc(15px + env(safe-area-inset-bottom));
+}
+
+#appScreen .modal.hidden {
+  display: none;
+}
+
+#appScreen .modal-backdrop {
+  position: absolute;
+  inset: 0;
+
+  background: rgba(0,0,0,.72);
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+#appScreen .modal-card {
+  position: relative;
+  z-index: 2;
+
+  width: min(100%, 430px);
+
+  padding: 24px 20px 20px;
+
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 28px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(28,31,36,.97),
+      rgba(10,12,15,.98)
+    );
+
+  box-shadow:
+    0 -10px 70px rgba(0,0,0,.55),
+    inset 0 1px 0 rgba(255,255,255,.07);
+
+  animation: lawangenModalIn .22s ease;
+}
+
+@keyframes lawangenModalIn {
+  from {
+    opacity: 0;
+    transform: translateY(25px) scale(.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+#appScreen .modal-close {
+  position: absolute;
+
+  top: 13px;
+  right: 13px;
+
+  width: 36px;
+  height: 36px;
+
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 12px;
+
+  color: #aeb5bd;
+  background: rgba(255,255,255,.05);
+
+  font-size: 22px;
+  font-weight: 300;
+
+  cursor: pointer;
+}
+
+#appScreen .modal-icon {
+  width: 48px;
+  height: 48px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 15px;
+
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.08);
+
+  font-size: 20px;
+}
+
+#appScreen .modal-card h2 {
+  margin: 17px 0 5px;
+
+  font-size: 25px;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: -.04em;
+}
+
+#appScreen .modal-card p {
+  margin: 0 0 20px;
+
+  color: var(--app-muted);
+  font-size: 11px;
+}
+
+#appScreen .modal-card label {
+  display: block;
+
+  margin: 14px 0 7px;
+
+  color: #737d88;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: .15em;
+}
+
+#appScreen .modal-card select {
+  width: 100%;
+  height: 50px;
+
+  padding: 0 13px;
+
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 14px;
+
+  outline: none;
+
+  color: #fff;
+  background: rgba(255,255,255,.055);
+
+  font-size: 12px;
+}
+
+#appScreen .modal-card select option {
+  color: #fff;
+  background: #101216;
+}
+
+#appScreen .modal-card .primary-button {
+  width: 100%;
+  min-height: 52px;
+
+  margin-top: 20px;
+
+  border: 0;
+  border-radius: 16px;
+
+  color: #05070a;
+  background: #fff;
+
+  font-size: 10px;
+  font-weight: 950;
+  letter-spacing: .08em;
+
+  cursor: pointer;
+
+  box-shadow: 0 12px 30px rgba(0,0,0,.28);
+
+  transition: transform .17s ease;
+}
+
+#appScreen .modal-card .primary-button:active {
+  transform: scale(.975);
+}
+
+
+/* =========================================================
+   BOTTOM NAV
+========================================================= */
+
+#appScreen .bottom-nav {
+  position: absolute;
+
+  z-index: 100;
+
+  left: 12px;
+  right: 12px;
+  bottom: calc(10px + env(safe-area-inset-bottom));
+
+  height: 67px;
+
+  padding: 5px;
+
+  display: grid;
+  grid-template-columns: repeat(5,1fr);
+
+  border: 1px solid rgba(255,255,255,.11);
+  border-radius: 22px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(27,30,35,.88),
+      rgba(9,11,14,.88)
+    );
+
+  box-shadow:
+    0 18px 50px rgba(0,0,0,.40),
+    inset 0 1px 0 rgba(255,255,255,.07);
+
+  backdrop-filter: blur(25px) saturate(150%);
+  -webkit-backdrop-filter: blur(25px) saturate(150%);
+}
+
+#appScreen .nav-item {
+  position: relative;
+
+  border: 0;
+  border-radius: 17px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+
+  color: #636d78;
+  background: transparent;
+
+  cursor: pointer;
+
+  transition:
+    color .18s ease,
+    background .18s ease,
+    transform .18s ease;
+}
+
+#appScreen .nav-item span {
+  font-size: 18px;
+  line-height: 1;
+}
+
+#appScreen .nav-item small {
+  font-size: 7px;
+  font-weight: 900;
+  letter-spacing: .05em;
+}
+
+#appScreen .nav-item.active {
+  color: #fff;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255,255,255,.12),
+      rgba(255,255,255,.045)
+    );
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.07);
+}
+
+#appScreen .nav-item:active {
+  transform: scale(.9);
+}
+
+
+/* =========================================================
+   EMPTY STATES
+========================================================= */
+
+#appScreen .empty-state,
+#appScreen .empty {
+  min-height: 150px;
+
+  padding: 25px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+
+  border: 1px dashed rgba(255,255,255,.10);
+  border-radius: 20px;
+
+  color: var(--app-muted);
+  background: rgba(255,255,255,.025);
+}
+
+#appScreen .empty-state strong,
+#appScreen .empty strong {
+  color: #dce0e4;
+  font-size: 12px;
+}
+
+#appScreen .empty-state small,
+#appScreen .empty small {
+  margin-top: 5px;
+  color: #69737e;
+  font-size: 9px;
+}
+
+
+/* =========================================================
+   APP FOOTER
+========================================================= */
+
+#appScreen .app-footer {
+  padding: 28px 0 10px;
+
+  text-align: center;
+
+  color: #626b76;
+
+  font-size: 8px;
+  line-height: 1.8;
+  font-weight: 900;
+  letter-spacing: .12em;
+}
+
+#appScreen .app-footer span {
+  color: #414952;
+  font-size: 7px;
+}
+
+
+/* =========================================================
+   TOAST
+========================================================= */
+
+#appScreen .toast {
+  position: fixed;
+
+  z-index: 999;
+
+  left: 50%;
+  bottom: calc(94px + env(safe-area-inset-bottom));
+
+  transform: translateX(-50%) translateY(12px);
+
+  max-width: calc(100vw - 35px);
+
+  padding: 11px 16px;
+
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 14px;
+
+  color: #fff;
+  background: rgba(22,24,28,.94);
+
+  box-shadow:
+    0 15px 45px rgba(0,0,0,.40);
+
+  font-size: 10px;
+  font-weight: 800;
+
+  opacity: 0;
+
+  pointer-events: none;
+
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+
+  transition:
+    opacity .2s ease,
+    transform .2s ease;
+}
+
+#appScreen .toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+#appScreen .loading,
+#appScreen .loading-state {
+  min-height: 120px;
+
+  display: grid;
+  place-items: center;
+
+  color: #747e89;
+
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .14em;
+}
+
+#appScreen .loading::after,
+#appScreen .loading-state::after {
+  content: "";
+
+  width: 20px;
+  height: 20px;
+
+  margin-left: 8px;
+
+  display: inline-block;
+
+  border: 2px solid rgba(255,255,255,.12);
+  border-top-color: #fff;
+
+  border-radius: 50%;
+
+  animation: lawangenSpin .7s linear infinite;
+}
+
+@keyframes lawangenSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* =========================================================
+   SCROLLBAR
+========================================================= */
+
+#appScreen .page::-webkit-scrollbar {
+  width: 3px;
+}
+
+#appScreen .page::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#appScreen .page::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,.15);
+  border-radius: 20px;
+}
+
+
+/* =========================================================
+   FOCUS
+========================================================= */
+
+#appScreen button:focus-visible,
+#appScreen input:focus-visible,
+#appScreen select:focus-visible {
+  outline: 2px solid rgba(255,255,255,.45);
+  outline-offset: 2px;
+}
+
+
+/* =========================================================
+   DESKTOP / LARGE SCREEN
+========================================================= */
+
+@media (min-width: 700px) {
+
+  #appScreen .page {
+    width: min(100%, 720px);
+    left: 50%;
+    right: auto;
+
+    transform: translateX(-50%) translateY(8px);
+  }
+
+  #appScreen .page.active {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  #appScreen .topbar {
+    padding-left: max(
+      22px,
+      calc((100vw - 720px) / 2 + 5px)
+    );
+
+    padding-right: max(
+      22px,
+      calc((100vw - 720px) / 2 + 5px)
+    );
+  }
+
+  #appScreen .bottom-nav {
+    width: min(690px, calc(100% - 24px));
+    left: 50%;
+    right: auto;
+
+    transform: translateX(-50%);
+  }
+
+}
+
+
+/* =========================================================
+   REDUCED MOTION
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+  #appScreen *,
+  #appScreen *::before,
+  #appScreen *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+
+}
+
+
+/* =========================================================
+   VERY SMALL IPHONES
+========================================================= */
+
+@media (max-width: 360px) {
+
+  #appScreen .page {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  #appScreen .stats-grid {
+    gap: 8px;
+  }
+
+  #appScreen .stat-card {
+    min-height: 115px;
+    padding: 13px;
+  }
+
+  #appScreen .welcome h1 {
+    font-size: 27px;
+  }
+
+  #appScreen .bottom-nav {
+    left: 8px;
+    right: 8px;
+  }
+
+}
