@@ -1,1 +1,35 @@
-# LAWANGEN iOS Build
+name: LAWANGEN iOS Build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout LAWANGEN
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install Capacitor CLI
+        run: npm install @capacitor/cli @capacitor/core
+
+      - name: Add iOS platform
+        run: npx cap add ios
+
+      - name: Sync Capacitor
+        run: npx cap sync ios
+
+      - name: Build information
+        run: |
+          echo "LAWANGEN iOS project generated successfully."
+          echo "Signing will be configured in the next step."
