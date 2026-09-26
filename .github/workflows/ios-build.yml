@@ -20,8 +20,7 @@ jobs:
         run: npm install
 
       - name: Install Capacitor packages
-        run: |
-          npm install @capacitor/core @capacitor/cli @capacitor/ios
+        run: npm install @capacitor/core @capacitor/cli @capacitor/ios
 
       - name: Add iOS platform
         run: npx cap add ios
