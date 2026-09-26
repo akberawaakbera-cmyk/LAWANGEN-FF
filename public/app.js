@@ -16,7 +16,10 @@ const state = {
     developer_name: "LAWANGEN",
     admin_name: "ROKHAN SYED",
     logo_data: ""
-  }
+  },
+
+  hasExistingSession: false,
+  existingSession: null
 };
 
 
@@ -94,6 +97,89 @@ const copyAdminKeyButton = $("copyAdminKeyButton");
 
 
 /* =========================================
+   SERVER LIST
+========================================= */
+
+const CONTROL_SERVERS = [
+  {
+    name: "India",
+    code: "IN",
+    flag: "🇮🇳"
+  },
+  {
+    name: "Bangladesh",
+    code: "BD",
+    flag: "🇧🇩"
+  },
+  {
+    name: "Pakistan",
+    code: "PK",
+    flag: "🇵🇰"
+  },
+  {
+    name: "Singapore",
+    code: "SG",
+    flag: "🇸🇬"
+  },
+  {
+    name: "Indonesia",
+    code: "ID",
+    flag: "🇮🇩"
+  },
+  {
+    name: "Thailand",
+    code: "TH",
+    flag: "🇹🇭"
+  },
+  {
+    name: "Vietnam",
+    code: "VN",
+    flag: "🇻🇳"
+  },
+  {
+    name: "Taiwan",
+    code: "TW",
+    flag: "🇹🇼"
+  },
+  {
+    name: "Middle East",
+    code: "MENA",
+    flag: "🌍"
+  },
+  {
+    name: "Europe",
+    code: "EU",
+    flag: "🇪🇺"
+  },
+  {
+    name: "Russia",
+    code: "CIS",
+    flag: "🇷🇺"
+  },
+  {
+    name: "Brazil",
+    code: "BR",
+    flag: "🇧🇷"
+  },
+  {
+    name: "North America",
+    code: "NA",
+    flag: "🇺🇸"
+  },
+  {
+    name: "South America",
+    code: "LATAM",
+    flag: "🌎"
+  },
+  {
+    name: "Africa",
+    code: "AF",
+    flag: "🌍"
+  }
+];
+
+
+/* =========================================
    LOCAL LOGO
 ========================================= */
 
@@ -121,14 +207,27 @@ function finishSplash() {
 
   splash.classList.add("splash-exit");
 
-  setTimeout(() => {
+  setTimeout(async () => {
 
     splash.classList.add("hidden");
 
-    /*
-      Do not automatically show a login form.
-      The user first sees the Access screen.
-    */
+    if (
+      state.existingSession === "developer"
+    ) {
+
+      await openDeveloperPanel();
+      return;
+
+    }
+
+    if (
+      state.existingSession === "admin"
+    ) {
+
+      await openAdminPanel();
+      return;
+
+    }
 
     showAccessScreen();
 
@@ -138,10 +237,7 @@ function finishSplash() {
 
 
 /*
-  6.2 second professional startup.
-
-  The splash is the only visible screen
-  during this period.
+  Professional startup screen.
 */
 
 setTimeout(
@@ -157,9 +253,7 @@ setTimeout(
 function hideAllEntryScreens() {
 
   loginScreen.classList.add("hidden");
-
   adminLoginForm.classList.add("hidden");
-
   developerLoginScreen.classList.add("hidden");
 
 }
@@ -242,17 +336,11 @@ function playSound(type = "click") {
     gain.connect(audio.destination);
 
     if (type === "success") {
-
       oscillator.frequency.value = 720;
-
     } else if (type === "error") {
-
       oscillator.frequency.value = 180;
-
     } else {
-
       oscillator.frequency.value = 430;
-
     }
 
     gain.gain.setValueAtTime(
@@ -340,9 +428,7 @@ async function loadPublicBranding() {
         "/api/admin/branding"
       );
 
-    if (
-      result.branding
-    ) {
+    if (result.branding) {
 
       state.branding = {
         ...state.branding,
@@ -405,9 +491,7 @@ function applyLogoToUI(logo) {
       document.createElement("img");
 
     img.src = logo;
-
-    img.alt =
-      "LAWANGEN Logo";
+    img.alt = "LAWANGEN Logo";
 
     element.appendChild(img);
 
@@ -425,7 +509,6 @@ adminAccessButton.addEventListener(
   () => {
 
     playSound();
-
     showAdminLogin();
 
   }
@@ -437,7 +520,6 @@ developerLoginButton.addEventListener(
   () => {
 
     playSound();
-
     showDeveloperLogin();
 
   }
@@ -451,7 +533,6 @@ backToAccess.addEventListener(
     playSound();
 
     adminKey.value = "";
-
     loginMessage.textContent = "";
 
     showAccessScreen();
@@ -467,7 +548,6 @@ backToAdminLogin.addEventListener(
     playSound();
 
     developerToken.value = "";
-
     developerLoginMessage.textContent = "";
 
     showAccessScreen();
@@ -491,13 +571,11 @@ showKey.addEventListener(
     ) {
 
       adminKey.type = "text";
-
       showKey.textContent = "○";
 
     } else {
 
       adminKey.type = "password";
-
       showKey.textContent = "◉";
 
     }
@@ -520,12 +598,8 @@ adminKey.addEventListener(
   "keydown",
   event => {
 
-    if (
-      event.key === "Enter"
-    ) {
-
+    if (event.key === "Enter") {
       login();
-
     }
 
   }
@@ -554,8 +628,7 @@ async function login() {
     loginButton.querySelector("span");
 
   if (buttonText) {
-    buttonText.textContent =
-      "VERIFYING...";
+    buttonText.textContent = "VERIFYING...";
   }
 
   try {
@@ -582,10 +655,7 @@ async function login() {
     }
 
     state.mode = "admin";
-
-    state.admin =
-      result.admin;
-
+    state.admin = result.admin;
     state.developer = false;
 
     loginMessage.textContent =
@@ -613,10 +683,8 @@ async function login() {
     loginButton.disabled = false;
 
     if (buttonText) {
-
       buttonText.textContent =
         "ENTER ADMIN PANEL";
-
     }
 
   }
@@ -639,16 +707,12 @@ showDeveloperToken.addEventListener(
     ) {
 
       developerToken.type = "text";
-
-      showDeveloperToken.textContent =
-        "○";
+      showDeveloperToken.textContent = "○";
 
     } else {
 
       developerToken.type = "password";
-
-      showDeveloperToken.textContent =
-        "◉";
+      showDeveloperToken.textContent = "◉";
 
     }
 
@@ -670,12 +734,8 @@ developerToken.addEventListener(
   "keydown",
   event => {
 
-    if (
-      event.key === "Enter"
-    ) {
-
+    if (event.key === "Enter") {
       developerLogin();
-
     }
 
   }
@@ -706,10 +766,8 @@ async function developerLogin() {
     );
 
   if (buttonText) {
-
     buttonText.textContent =
       "VERIFYING...";
-
   }
 
   try {
@@ -737,9 +795,7 @@ async function developerLogin() {
     }
 
     state.mode = "developer";
-
     state.developer = true;
-
     state.admin = null;
 
     developerLoginMessage.textContent =
@@ -766,10 +822,8 @@ async function developerLogin() {
     developerEnterButton.disabled = false;
 
     if (buttonText) {
-
       buttonText.textContent =
         "ENTER DEVELOPER PANEL";
-
     }
 
   }
@@ -791,23 +845,14 @@ async function openAdminPanel() {
       );
 
     if (!me.success) {
-
-      throw new Error(
-        "Session expired."
-      );
-
+      throw new Error("Session expired.");
     }
 
-    state.admin =
-      me.admin;
-
+    state.admin = me.admin;
     state.mode = "admin";
-
     state.developer = false;
 
-    developerTools.classList.add(
-      "hidden"
-    );
+    developerTools.classList.add("hidden");
 
     $("topRole").textContent =
       "RESELLER CONTROL";
@@ -818,11 +863,19 @@ async function openAdminPanel() {
     $("homeDescription").textContent =
       "Admin control center";
 
+    const welcome =
+      document.querySelector(".welcome h1");
+
+    if (welcome) {
+
+      welcome.innerHTML =
+        "ROKHAN <span>SYED</span>";
+
+    }
+
     hideAllEntryScreens();
 
-    appScreen.classList.remove(
-      "hidden"
-    );
+    appScreen.classList.remove("hidden");
 
     updateAdminIdentity();
 
@@ -832,9 +885,7 @@ async function openAdminPanel() {
 
   } catch (error) {
 
-    appScreen.classList.add(
-      "hidden"
-    );
+    appScreen.classList.add("hidden");
 
     showAdminLogin();
 
@@ -861,15 +912,12 @@ async function openDeveloperPanel() {
       );
 
     if (!result.success) {
-
       throw new Error(
         "Developer session expired."
       );
-
     }
 
     state.mode = "developer";
-
     state.developer = true;
 
     developerTools.classList.remove(
@@ -886,9 +934,7 @@ async function openDeveloperPanel() {
       "Developer control center";
 
     const welcome =
-      document.querySelector(
-        ".welcome h1"
-      );
+      document.querySelector(".welcome h1");
 
     if (welcome) {
 
@@ -899,21 +945,19 @@ async function openDeveloperPanel() {
 
     hideAllEntryScreens();
 
-    appScreen.classList.remove(
-      "hidden"
-    );
+    appScreen.classList.remove("hidden");
 
     await loadPublicBranding();
 
-    switchPage(
-      "settingsPage"
-    );
+    await loadServices();
+
+    renderServerControl();
+
+    switchPage("settingsPage");
 
   } catch (error) {
 
-    appScreen.classList.add(
-      "hidden"
-    );
+    appScreen.classList.add("hidden");
 
     showDeveloperLogin();
 
@@ -927,7 +971,7 @@ async function openDeveloperPanel() {
 
 
 /* =========================================
-   LOAD ADMIN DATA
+   LOAD ALL
 ========================================= */
 
 async function loadAll() {
@@ -935,18 +979,15 @@ async function loadAll() {
   await Promise.allSettled([
 
     loadDashboard(),
-
     loadKeys(),
-
     loadUsers(),
-
     loadServices(),
-
     loadActivity(),
-
     loadPublicBranding()
 
   ]);
+
+  renderServerControl();
 
 }
 
@@ -977,9 +1018,7 @@ function updateAdminIdentity() {
       )}
       <span>
         ${escapeHTML(
-          parts
-            .slice(1)
-            .join(" ")
+          parts.slice(1).join(" ")
         )}
       </span>`;
 
@@ -991,10 +1030,7 @@ function updateAdminIdentity() {
     );
 
   if (profileName) {
-
-    profileName.textContent =
-      name;
-
+    profileName.textContent = name;
   }
 
   const profileAvatar =
@@ -1032,8 +1068,7 @@ async function loadDashboard() {
       return;
     }
 
-    state.dashboard =
-      result;
+    state.dashboard = result;
 
     activeKeys.textContent =
       result.stats?.active_keys ?? 0;
@@ -1101,21 +1136,15 @@ function renderKeys(filter = "") {
     state.keys.filter(item => {
 
       return (
-
-        String(
-          item.api_key || ""
-        )
-        .toLowerCase()
-        .includes(search)
+        String(item.api_key || "")
+          .toLowerCase()
+          .includes(search)
 
         ||
 
-        String(
-          item.service || ""
-        )
-        .toLowerCase()
-        .includes(search)
-
+        String(item.service || "")
+          .toLowerCase()
+          .includes(search)
       );
 
     });
@@ -1140,13 +1169,10 @@ function renderKeys(filter = "") {
 
   }
 
-
   filtered.forEach(item => {
 
     const card =
-      document.createElement(
-        "div"
-      );
+      document.createElement("div");
 
     card.className =
       "key-card glass";
@@ -1200,6 +1226,7 @@ function renderKeys(filter = "") {
         <button
           class="small-button copy-button"
           data-key="${escapeAttribute(key)}"
+          type="button"
         >
           COPY
         </button>
@@ -1210,6 +1237,7 @@ function renderKeys(filter = "") {
             <button
               class="small-button revoke"
               data-id="${item.id}"
+              type="button"
             >
               REVOKE
             </button>
@@ -1218,6 +1246,7 @@ function renderKeys(filter = "") {
             <button
               class="small-button activate"
               data-id="${item.id}"
+              type="button"
             >
               ACTIVATE
             </button>
@@ -1239,14 +1268,14 @@ function renderKeys(filter = "") {
 function attachKeyActions() {
 
   document
-    .querySelectorAll(
-      ".copy-button"
-    )
+    .querySelectorAll(".copy-button")
     .forEach(button => {
 
       button.addEventListener(
         "click",
         async () => {
+
+          playSound();
 
           try {
 
@@ -1258,10 +1287,7 @@ function attachKeyActions() {
               "COPIED ✓";
 
             setTimeout(() => {
-
-              button.textContent =
-                "COPY";
-
+              button.textContent = "COPY";
             }, 1000);
 
           } catch {}
@@ -1273,34 +1299,40 @@ function attachKeyActions() {
 
 
   document
-    .querySelectorAll(
-      ".revoke"
-    )
+    .querySelectorAll(".revoke")
     .forEach(button => {
 
       button.addEventListener(
         "click",
-        () =>
+        () => {
+
+          playSound();
+
           revokeKey(
             button.dataset.id
-          )
+          );
+
+        }
       );
 
     });
 
 
   document
-    .querySelectorAll(
-      ".activate"
-    )
+    .querySelectorAll(".activate")
     .forEach(button => {
 
       button.addEventListener(
         "click",
-        () =>
+        () => {
+
+          playSound();
+
           activateKey(
             button.dataset.id
-          )
+          );
+
+        }
       );
 
     });
@@ -1326,7 +1358,6 @@ async function revokeKey(id) {
     playSound("success");
 
     await loadKeys();
-
     await loadDashboard();
 
   } catch (error) {
@@ -1361,7 +1392,6 @@ async function activateKey(id) {
     playSound("success");
 
     await loadKeys();
-
     await loadDashboard();
 
   } catch (error) {
@@ -1425,16 +1455,12 @@ function renderUsers() {
   userList.innerHTML = "";
 
   let active = 0;
-
   let expired = 0;
-
 
   state.users.forEach(user => {
 
     const card =
-      document.createElement(
-        "div"
-      );
+      document.createElement("div");
 
     card.className =
       "user-card glass";
@@ -1452,9 +1478,7 @@ function renderUsers() {
       );
 
     const isActive =
-      rawStatus
-        .toLowerCase() ===
-      "active";
+      rawStatus.toLowerCase() === "active";
 
     if (isActive) {
       active++;
@@ -1504,7 +1528,6 @@ function renderUsers() {
 
   });
 
-
   userCount.textContent =
     state.users.length;
 
@@ -1525,17 +1548,27 @@ async function loadServices() {
 
   try {
 
+    /*
+      Developer and Admin use different
+      service endpoints.
+    */
+
+    const endpoint =
+      state.mode === "developer"
+        ? "/api/developer/services"
+        : "/api/admin/services";
+
     const result =
-      await api(
-        "/api/admin/services"
-      );
+      await api(endpoint);
 
     state.services =
       result.services || [];
 
     renderServices();
-
     populateGameSelect();
+
+    totalServices.textContent =
+      state.services.length;
 
   } catch (error) {
 
@@ -1543,6 +1576,15 @@ async function loadServices() {
       "Services:",
       error
     );
+
+    /*
+      If Developer API is not yet installed,
+      keep the existing UI instead of crashing.
+    */
+
+    if (!state.services.length) {
+      renderServices();
+    }
 
   }
 
@@ -1553,11 +1595,16 @@ function renderServices() {
 
   gameList.innerHTML = "";
 
+  /*
+    Developer server-control information
+    appears above the games list on Home.
+  */
+
   if (!state.services.length) {
 
     gameList.innerHTML = `
       <div class="game-card glass">
-        <div>
+        <div class="game-info">
           <strong>No services</strong>
           <small>No services available</small>
         </div>
@@ -1573,9 +1620,7 @@ function renderServices() {
     (service, index) => {
 
       const card =
-        document.createElement(
-          "div"
-        );
+        document.createElement("div");
 
       card.className =
         "game-card glass";
@@ -1589,17 +1634,32 @@ function renderServices() {
           service.status || "active"
         );
 
+      const initials =
+        name
+          .slice(0, 2)
+          .toUpperCase();
+
+      const logo =
+        service.logo_data
+          ? `
+            <div class="game-logo">
+              <img
+                src="${escapeAttribute(service.logo_data)}"
+                alt="${escapeAttribute(name)}"
+              >
+            </div>
+          `
+          : `
+            <div class="game-logo-placeholder">
+              ${escapeHTML(initials)}
+            </div>
+          `;
+
       card.innerHTML = `
 
-        <div class="game-logo">
-          ${escapeHTML(
-            name
-              .slice(0, 2)
-              .toUpperCase()
-          )}
-        </div>
+        ${logo}
 
-        <div>
+        <div class="game-info">
 
           <strong>
             ${escapeHTML(name)}
@@ -1609,15 +1669,19 @@ function renderServices() {
             ${escapeHTML(status)}
           </small>
 
-        </div>
+          <span class="game-status ${
+            status.toLowerCase().includes("maint")
+              ? "maintenance"
+              : ""
+          }">
+            ${
+              status.toLowerCase().includes("maint")
+                ? "MAINTENANCE"
+                : "AVAILABLE"
+            }
+          </span>
 
-        <span class="status-dot ${
-          status
-            .toLowerCase()
-            .includes("maint")
-            ? "maintenance"
-            : ""
-        }"></span>
+        </div>
 
       `;
 
@@ -1629,51 +1693,141 @@ function renderServices() {
 }
 
 
+/* =========================================
+   GAME SELECT
+========================================= */
+
 function populateGameSelect() {
+
+  if (!gameSelect) {
+    return;
+  }
 
   gameSelect.innerHTML = "";
 
   if (!state.services.length) {
 
     const option =
-      document.createElement(
-        "option"
-      );
+      document.createElement("option");
 
     option.value = "";
-
     option.textContent =
       "No services available";
 
-    gameSelect.appendChild(
-      option
-    );
+    gameSelect.appendChild(option);
 
     return;
 
   }
 
+  state.services.forEach(service => {
 
-  state.services.forEach(
-    service => {
+    const option =
+      document.createElement("option");
 
-      const option =
-        document.createElement(
-          "option"
-        );
+    option.value =
+      service.name;
 
-      option.value =
-        service.name;
+    option.textContent =
+      service.name;
 
-      option.textContent =
-        service.name;
+    gameSelect.appendChild(option);
 
-      gameSelect.appendChild(
-        option
-      );
+  });
 
+}
+
+
+/* =========================================
+   SERVER CONTROL
+========================================= */
+
+function renderServerControl() {
+
+  const homePage =
+    $("homePage");
+
+  if (!homePage) {
+    return;
+  }
+
+  let section =
+    $("serverControlSection");
+
+  if (!section) {
+
+    section =
+      document.createElement("section");
+
+    section.id =
+      "serverControlSection";
+
+    section.className =
+      "server-control-section";
+
+    const stats =
+      homePage.querySelector(".stats-grid");
+
+    if (stats) {
+      stats.after(section);
+    } else {
+      homePage.prepend(section);
     }
-  );
+
+  }
+
+  section.innerHTML = `
+
+    <div class="server-control-header">
+
+      <div class="server-control-label">
+        SERVER ACCESS
+      </div>
+
+      <div class="server-control-title">
+        THIS ADMIN CAN CONTROL
+      </div>
+
+      <div class="server-control-subtitle">
+        THIS SERVER
+      </div>
+
+    </div>
+
+    <div class="server-control-grid">
+
+      ${CONTROL_SERVERS.map(server => `
+
+        <div class="server-card">
+
+          <div class="server-flag">
+            ${server.flag}
+          </div>
+
+          <div class="server-details">
+
+            <strong>
+              ${escapeHTML(server.name)}
+            </strong>
+
+            <small>
+              ${escapeHTML(server.code)} SERVER
+            </small>
+
+          </div>
+
+          <div class="server-status">
+            <span></span>
+            CONTROL
+          </div>
+
+        </div>
+
+      `).join("")}
+
+    </div>
+
+  `;
 
 }
 
@@ -1701,7 +1855,6 @@ async function createKey() {
   if (!service) {
 
     playSound("error");
-
     return;
 
   }
@@ -1736,14 +1889,10 @@ async function createKey() {
 
     closeKeyModal();
 
-    switchPage(
-      "keysPage"
-    );
+    switchPage("keysPage");
 
     await loadKeys();
-
     await loadUsers();
-
     await loadDashboard();
 
   } catch (error) {
@@ -1828,15 +1977,12 @@ function renderActivity(items) {
 
   }
 
-
   items
     .slice(0, 8)
     .forEach(item => {
 
       const activity =
-        document.createElement(
-          "div"
-        );
+        document.createElement("div");
 
       activity.className =
         "activity";
@@ -1899,8 +2045,7 @@ async function createAdminKey() {
 
   }
 
-  createAdminKeyButton.disabled =
-    true;
+  createAdminKeyButton.disabled = true;
 
   createAdminKeyButton.textContent =
     "WAIT...";
@@ -1981,6 +2126,8 @@ copyAdminKeyButton.addEventListener(
         key
       );
 
+      playSound();
+
       copyAdminKeyButton.textContent =
         "COPIED ✓";
 
@@ -2038,13 +2185,17 @@ logoFileInput.addEventListener(
       return;
     }
 
+    /*
+      Frontend maximum: 4 MB.
+    */
+
     if (
       file.size >
-      1000 * 1024
+      4 * 1024 * 1024
     ) {
 
       alert(
-        "Please select a logo smaller than 1 MB."
+        "Please select a logo smaller than 4 MB."
       );
 
       logoFileInput.value = "";
@@ -2056,9 +2207,7 @@ logoFileInput.addEventListener(
     try {
 
       const data =
-        await fileToDataURL(
-          file
-        );
+        await fileToDataURL(file);
 
       await api(
         "/api/admin/branding",
@@ -2091,6 +2240,10 @@ logoFileInput.addEventListener(
         error.message ||
         "Unable to save logo."
       );
+
+    } finally {
+
+      logoFileInput.value = "";
 
     }
 
@@ -2132,6 +2285,8 @@ removeLogoButton.addEventListener(
       localStorage.removeItem(
         "lawangenLogo"
       );
+
+      playSound("success");
 
       location.reload();
 
@@ -2187,33 +2342,22 @@ function switchPage(pageId) {
 
   pages.forEach(page => {
 
-    page.classList.remove(
-      "active"
-    );
+    page.classList.remove("active");
 
   });
-
 
   navItems.forEach(nav => {
 
-    nav.classList.remove(
-      "active"
-    );
+    nav.classList.remove("active");
 
   });
-
 
   const page =
     $(pageId);
 
   if (page) {
-
-    page.classList.add(
-      "active"
-    );
-
+    page.classList.add("active");
   }
-
 
   const activeNav =
     document.querySelector(
@@ -2221,11 +2365,15 @@ function switchPage(pageId) {
     );
 
   if (activeNav) {
+    activeNav.classList.add("active");
+  }
 
-    activeNav.classList.add(
-      "active"
-    );
+  /*
+    Refresh server control when returning Home.
+  */
 
+  if (pageId === "homePage") {
+    renderServerControl();
   }
 
 }
@@ -2241,9 +2389,7 @@ $("viewKeys").addEventListener(
 
     playSound();
 
-    switchPage(
-      "keysPage"
-    );
+    switchPage("keysPage");
 
   }
 );
@@ -2283,9 +2429,7 @@ closeModal.addEventListener(
 
 
 document
-  .querySelector(
-    ".modal-backdrop"
-  )
+  .querySelector(".modal-backdrop")
   .addEventListener(
     "click",
     closeKeyModal
@@ -2311,14 +2455,8 @@ soundToggle.addEventListener(
   "change",
   () => {
 
-    if (
-      soundToggle.checked
-    ) {
-
-      playSound(
-        "success"
-      );
-
+    if (soundToggle.checked) {
+      playSound("success");
     }
 
   }
@@ -2329,19 +2467,14 @@ animationToggle.addEventListener(
   "change",
   () => {
 
-    if (
-      !animationToggle.checked
-    ) {
+    if (!animationToggle.checked) {
 
       document
         .querySelectorAll("*")
         .forEach(element => {
 
-          element.style.animation =
-            "none";
-
-          element.style.transition =
-            "none";
+          element.style.animation = "none";
+          element.style.transition = "none";
 
         });
 
@@ -2386,8 +2519,7 @@ logoutButton.addEventListener(
     try {
 
       if (
-        state.mode ===
-        "developer"
+        state.mode === "developer"
       ) {
 
         await api(
@@ -2411,25 +2543,21 @@ logoutButton.addEventListener(
     } catch {}
 
     state.mode = "admin";
-
     state.admin = null;
-
     state.developer = false;
+    state.hasExistingSession = false;
+    state.existingSession = null;
 
-    appScreen.classList.add(
-      "hidden"
-    );
+    appScreen.classList.add("hidden");
 
     developerTools.classList.add(
       "hidden"
     );
 
     adminKey.value = "";
-
     developerToken.value = "";
 
     loginMessage.textContent = "";
-
     developerLoginMessage.textContent = "";
 
     showAccessScreen();
@@ -2443,12 +2571,6 @@ logoutButton.addEventListener(
 ========================================= */
 
 async function checkExistingSession() {
-
-  /*
-    Important:
-    Do not open any screen while splash
-    is still running.
-  */
 
   let existingMode = null;
 
@@ -2499,14 +2621,8 @@ async function checkExistingSession() {
   }
 
 
-  /*
-    Store the session result.
-    It will be opened only after splash.
-  */
-
   if (
-    existingMode ===
-    "developer"
+    existingMode === "developer"
   ) {
 
     state.mode =
@@ -2530,8 +2646,7 @@ async function checkExistingSession() {
 
 
   if (
-    existingMode ===
-    "admin"
+    existingMode === "admin"
   ) {
 
     state.mode =
@@ -2560,67 +2675,6 @@ async function checkExistingSession() {
 }
 
 
-/*
-  After splash is finished:
-  - existing developer session → developer panel
-  - existing admin session → admin panel
-  - no session → access screen
-*/
-
-const originalFinishSplash =
-  finishSplash;
-
-
-finishSplash = function () {
-
-  if (splashFinished) {
-    return;
-  }
-
-  splashFinished = true;
-
-  splash.classList.add(
-    "splash-exit"
-  );
-
-  setTimeout(
-    async () => {
-
-      splash.classList.add(
-        "hidden"
-      );
-
-      if (
-        state.existingSession ===
-        "developer"
-      ) {
-
-        await openDeveloperPanel();
-
-        return;
-
-      }
-
-      if (
-        state.existingSession ===
-        "admin"
-      ) {
-
-        await openAdminPanel();
-
-        return;
-
-      }
-
-      showAccessScreen();
-
-    },
-    650
-  );
-
-};
-
-
 /* =========================================
    HELPERS
 ========================================= */
@@ -2639,9 +2693,7 @@ function formatExpiry(value) {
       date.getTime()
     )
   ) {
-
     return String(value);
-
   }
 
   const diff =
@@ -2649,9 +2701,7 @@ function formatExpiry(value) {
     Date.now();
 
   if (diff <= 0) {
-
     return "Expired";
-
   }
 
   const days =
@@ -2682,9 +2732,7 @@ function formatDate(value) {
       date.getTime()
     )
   ) {
-
     return String(value);
-
   }
 
   return date.toLocaleString(
@@ -2714,9 +2762,7 @@ function fileToDataURL(file) {
       reader.onerror =
         reject;
 
-      reader.readAsDataURL(
-        file
-      );
+      reader.readAsDataURL(file);
 
     }
   );
@@ -2726,37 +2772,18 @@ function fileToDataURL(file) {
 
 function escapeHTML(value) {
 
-  return String(
-    value ?? ""
-  )
-    .replaceAll(
-      "&",
-      "&amp;"
-    )
-    .replaceAll(
-      "<",
-      "&lt;"
-    )
-    .replaceAll(
-      ">",
-      "&gt;"
-    )
-    .replaceAll(
-      '"',
-      "&quot;"
-    )
-    .replaceAll(
-      "'",
-      "&#039;"
-    );
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 
 }
 
 
 function escapeAttribute(value) {
-
   return escapeHTML(value);
-
 }
 
 
@@ -2764,16 +2791,6 @@ function escapeAttribute(value) {
    INITIALIZE
 ========================================= */
 
-/*
-  Load branding immediately.
-*/
-
 loadPublicBranding();
-
-
-/*
-  Check session in background,
-  but do NOT show it until splash ends.
-*/
 
 checkExistingSession();
