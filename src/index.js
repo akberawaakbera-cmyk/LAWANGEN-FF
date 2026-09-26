@@ -6,7 +6,10 @@ const JSON_HEADERS = {
 function json(data, status = 200, extraHeaders = {}) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { ...JSON_HEADERS, ...extraHeaders }
+    headers: {
+      ...JSON_HEADERS,
+      ...extraHeaders
+    }
   });
 }
 
@@ -24,26 +27,20 @@ function corsHeaders(request) {
 }
 
 async function sha256(value) {
-  const data =
-    new TextEncoder().encode(value);
+  const data = new TextEncoder().encode(String(value));
 
-  const hash =
-    await crypto.subtle.digest(
-      "SHA-256",
-      data
-    );
+  const hash = await crypto.subtle.digest(
+    "SHA-256",
+    data
+  );
 
   return [...new Uint8Array(hash)]
-    .map(b =>
-      b.toString(16).padStart(2, "0")
-    )
+    .map(b => b.toString(16).padStart(2, "0"))
     .join("");
 }
 
 function randomString(length = 32) {
-
-  const bytes =
-    new Uint8Array(length);
+  const bytes = new Uint8Array(length);
 
   crypto.getRandomValues(bytes);
 
@@ -59,17 +56,15 @@ function makeKey(prefix = "RK") {
 }
 
 function getCookie(request, name) {
-
   const cookie =
     request.headers.get("Cookie") || "";
 
-  const found =
-    cookie
-      .split(";")
-      .map(x => x.trim())
-      .find(
-        x => x.startsWith(`${name}=`)
-      );
+  const found = cookie
+    .split(";")
+    .map(x => x.trim())
+    .find(
+      x => x.startsWith(`${name}=`)
+    );
 
   return found
     ? decodeURIComponent(
@@ -78,9 +73,7 @@ function getCookie(request, name) {
     : null;
 }
 
-
 function setAdminSessionCookie(token) {
-
   return [
     `rokhan_session=${encodeURIComponent(token)}`,
     "HttpOnly",
@@ -89,11 +82,9 @@ function setAdminSessionCookie(token) {
     "Path=/",
     "Max-Age=604800"
   ].join("; ");
-
 }
 
 function clearAdminSessionCookie() {
-
   return [
     "rokhan_session=",
     "HttpOnly",
@@ -102,12 +93,9 @@ function clearAdminSessionCookie() {
     "Path=/",
     "Max-Age=0"
   ].join("; ");
-
 }
 
-
 function setDeveloperSessionCookie(token) {
-
   return [
     `lawangen_developer_session=${encodeURIComponent(token)}`,
     "HttpOnly",
@@ -116,11 +104,9 @@ function setDeveloperSessionCookie(token) {
     "Path=/",
     "Max-Age=604800"
   ].join("; ");
-
 }
 
 function clearDeveloperSessionCookie() {
-
   return [
     "lawangen_developer_session=",
     "HttpOnly",
@@ -129,32 +115,45 @@ function clearDeveloperSessionCookie() {
     "Path=/",
     "Max-Age=0"
   ].join("; ");
-
 }
 
-
 function futureDate(days) {
-
   const d = new Date();
+
+  const safeDays = Number(days || 30);
 
   d.setDate(
     d.getDate() +
-    Number(days || 30)
+    (
+      Number.isFinite(safeDays) && safeDays > 0
+        ? safeDays
+        : 30
+    )
   );
 
   return d.toISOString();
-
 }
 
 function isExpired(date) {
-
   if (!date) return false;
 
   return (
     new Date(date).getTime() <=
     Date.now()
   );
+}
 
+function normalizeDays(value, fallback = 30) {
+  const days = Number(value);
+
+  if (
+    !Number.isFinite(days) ||
+    days <= 0
+  ) {
+    return fallback;
+  }
+
+  return Math.floor(days);
 }
 
 
@@ -163,15 +162,12 @@ function isExpired(date) {
 ========================================= */
 
 async function requireAdmin(request, env) {
-
-  const token =
-    getCookie(
-      request,
-      "rokhan_session"
-    );
+  const token = getCookie(
+    request,
+    "rokhan_session"
+  );
 
   if (!token) {
-
     return {
       error: json(
         {
@@ -181,7 +177,6 @@ async function requireAdmin(request, env) {
         401
       )
     };
-
   }
 
   const tokenHash =
@@ -206,7 +201,6 @@ async function requireAdmin(request, env) {
       .first();
 
   if (!session) {
-
     return {
       error: json(
         {
@@ -220,11 +214,9 @@ async function requireAdmin(request, env) {
         }
       )
     };
-
   }
 
   if (isExpired(session.expires_at)) {
-
     await env.DB.prepare(`
       DELETE FROM admin_sessions
       WHERE id = ?
@@ -245,21 +237,22 @@ async function requireAdmin(request, env) {
         }
       )
     };
-
   }
 
   if (session.status !== "active") {
-
     return {
       error: json(
         {
           success: false,
           error: "Admin account is disabled"
         },
-        403
+        403,
+        {
+          "Set-Cookie":
+            clearAdminSessionCookie()
+        }
       )
     };
-
   }
 
   if (
@@ -267,23 +260,24 @@ async function requireAdmin(request, env) {
       session.admin_expires_at
     )
   ) {
-
     return {
       error: json(
         {
           success: false,
           error: "Admin access has expired"
         },
-        403
+        403,
+        {
+          "Set-Cookie":
+            clearAdminSessionCookie()
+        }
       )
     };
-
   }
 
   return {
     admin: session
   };
-
 }
 
 
@@ -295,15 +289,12 @@ async function requireDeveloper(
   request,
   env
 ) {
-
-  const token =
-    getCookie(
-      request,
-      "lawangen_developer_session"
-    );
+  const token = getCookie(
+    request,
+    "lawangen_developer_session"
+  );
 
   if (!token) {
-
     return {
       error: json(
         {
@@ -314,7 +305,6 @@ async function requireDeveloper(
         401
       )
     };
-
   }
 
   const tokenHash =
@@ -333,7 +323,6 @@ async function requireDeveloper(
       .first();
 
   if (!session) {
-
     return {
       error: json(
         {
@@ -348,7 +337,6 @@ async function requireDeveloper(
         }
       )
     };
-
   }
 
   if (
@@ -356,7 +344,6 @@ async function requireDeveloper(
       session.expires_at
     )
   ) {
-
     await env.DB.prepare(`
       DELETE FROM developer_sessions
       WHERE id = ?
@@ -378,14 +365,12 @@ async function requireDeveloper(
         }
       )
     };
-
   }
 
   return {
     developer: true,
     session
   };
-
 }
 
 
@@ -399,19 +384,24 @@ async function logActivity(
   action,
   details = ""
 ) {
-
-  await env.DB.prepare(`
-    INSERT INTO activity_logs
-      (admin_id, action, details)
-    VALUES (?, ?, ?)
-  `)
-    .bind(
-      adminId || null,
-      action,
-      details
-    )
-    .run();
-
+  try {
+    await env.DB.prepare(`
+      INSERT INTO activity_logs
+        (admin_id, action, details)
+      VALUES (?, ?, ?)
+    `)
+      .bind(
+        adminId || null,
+        action,
+        details
+      )
+      .run();
+  } catch (error) {
+    console.log(
+      "Activity log failed:",
+      error?.message
+    );
+  }
 }
 
 
@@ -420,6 +410,8 @@ async function logActivity(
 ========================================= */
 
 async function ensureTables(env) {
+
+  /* ---------- BRANDING ---------- */
 
   await env.DB.prepare(`
     CREATE TABLE IF NOT EXISTS branding (
@@ -431,7 +423,6 @@ async function ensureTables(env) {
       updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     )
   `).run();
-
 
   await env.DB.prepare(`
     INSERT OR IGNORE INTO branding
@@ -450,6 +441,8 @@ async function ensureTables(env) {
   `).run();
 
 
+  /* ---------- DEVELOPER SESSIONS ---------- */
+
   await env.DB.prepare(`
     CREATE TABLE IF NOT EXISTS developer_sessions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -459,6 +452,104 @@ async function ensureTables(env) {
     )
   `).run();
 
+
+  /* ---------- ADMINS ---------- */
+
+  await env.DB.prepare(`
+    CREATE TABLE IF NOT EXISTS reseller_admins (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      admin_key_hash TEXT NOT NULL UNIQUE,
+      status TEXT NOT NULL DEFAULT 'active',
+      expires_at TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `).run();
+
+
+  /* ---------- ADMIN SESSIONS ---------- */
+
+  await env.DB.prepare(`
+    CREATE TABLE IF NOT EXISTS admin_sessions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      admin_id INTEGER NOT NULL,
+      session_token_hash TEXT NOT NULL UNIQUE,
+      expires_at TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `).run();
+
+
+  /* ---------- USER KEYS ---------- */
+
+  await env.DB.prepare(`
+    CREATE TABLE IF NOT EXISTS reseller_keys (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      admin_id INTEGER NOT NULL,
+      api_key TEXT NOT NULL UNIQUE,
+      service TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'active',
+      expires_at TEXT,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `).run();
+
+
+  /* ---------- USERS ---------- */
+
+  await env.DB.prepare(`
+    CREATE TABLE IF NOT EXISTS reseller_users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      admin_id INTEGER NOT NULL,
+      name TEXT NOT NULL,
+      key_id INTEGER,
+      status TEXT NOT NULL DEFAULT 'active',
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `).run();
+
+
+  /* ---------- SERVICES ---------- */
+
+  await env.DB.prepare(`
+    CREATE TABLE IF NOT EXISTS services (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL UNIQUE,
+      status TEXT NOT NULL DEFAULT 'active',
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `).run();
+
+
+  /* ---------- ACTIVITY ---------- */
+
+  await env.DB.prepare(`
+    CREATE TABLE IF NOT EXISTS activity_logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      admin_id INTEGER,
+      action TEXT NOT NULL,
+      details TEXT,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `).run();
+
+
+  /* ---------- DEFAULT SERVICES ---------- */
+
+  const defaultServices = [
+    "Free Fire",
+    "General"
+  ];
+
+  for (const service of defaultServices) {
+    await env.DB.prepare(`
+      INSERT OR IGNORE INTO services
+        (name, status)
+      VALUES (?, 'active')
+    `)
+      .bind(service)
+      .run();
+  }
 }
 
 
@@ -481,19 +572,20 @@ async function handleRequest(
     request.method;
 
 
-  if (method === "OPTIONS") {
+  /* ---------- CORS ---------- */
 
+  if (method === "OPTIONS") {
     return new Response(null, {
       status: 204,
       headers:
         corsHeaders(request)
     });
-
   }
 
 
-  if (!env.DB) {
+  /* ---------- DATABASE ---------- */
 
+  if (!env.DB) {
     return json(
       {
         success: false,
@@ -503,7 +595,6 @@ async function handleRequest(
       500,
       corsHeaders(request)
     );
-
   }
 
 
@@ -520,7 +611,6 @@ async function handleRequest(
       path === "/api/health" &&
       method === "GET"
     ) {
-
       return json(
         {
           success: true,
@@ -531,7 +621,6 @@ async function handleRequest(
         200,
         corsHeaders(request)
       );
-
     }
 
 
@@ -550,7 +639,6 @@ async function handleRequest(
         );
 
       if (!env.DEVELOPER_TOKEN) {
-
         return json(
           {
             success: false,
@@ -560,7 +648,6 @@ async function handleRequest(
           500,
           corsHeaders(request)
         );
-
       }
 
       if (
@@ -568,7 +655,6 @@ async function handleRequest(
         developerToken !==
           env.DEVELOPER_TOKEN
       ) {
-
         return json(
           {
             success: false,
@@ -578,7 +664,6 @@ async function handleRequest(
           403,
           corsHeaders(request)
         );
-
       }
 
 
@@ -623,7 +708,6 @@ async function handleRequest(
             )
         }
       );
-
     }
 
 
@@ -654,7 +738,6 @@ async function handleRequest(
         200,
         corsHeaders(request)
       );
-
     }
 
 
@@ -684,7 +767,6 @@ async function handleRequest(
         `)
           .bind(hash)
           .run();
-
       }
 
 
@@ -699,12 +781,12 @@ async function handleRequest(
             clearDeveloperSessionCookie()
         }
       );
-
     }
 
 
     /* =====================================
-       DEVELOPER CREATE ADMIN
+       DEVELOPER CREATE ADMIN KEY
+       DEVELOPER ONLY
     ===================================== */
 
     if (
@@ -723,8 +805,14 @@ async function handleRequest(
         return auth.error;
 
 
-      const body =
-        await request.json();
+      let body = {};
+
+      try {
+        body =
+          await request.json();
+      } catch {
+        body = {};
+      }
 
 
       const name =
@@ -735,13 +823,13 @@ async function handleRequest(
 
 
       const days =
-        Number(
-          body.days || 30
+        normalizeDays(
+          body.days,
+          30
         );
 
 
       if (!name) {
-
         return json(
           {
             success: false,
@@ -751,7 +839,6 @@ async function handleRequest(
           400,
           corsHeaders(request)
         );
-
       }
 
 
@@ -759,7 +846,9 @@ async function handleRequest(
         makeKey("ADMIN");
 
       const adminKeyHash =
-        await sha256(adminKey);
+        await sha256(
+          adminKey
+        );
 
       const expiresAt =
         futureDate(days);
@@ -790,6 +879,15 @@ async function handleRequest(
           .first();
 
 
+      /*
+        IMPORTANT:
+
+        The plain Admin Key is returned ONLY
+        in this Developer response.
+
+        It is NOT stored in plaintext in D1.
+      */
+
       return json(
         {
           success: true,
@@ -799,7 +897,215 @@ async function handleRequest(
         201,
         corsHeaders(request)
       );
+    }
 
+
+    /* =====================================
+       DEVELOPER LIST ADMINS
+       DEVELOPER ONLY
+    ===================================== */
+
+    if (
+      path ===
+        "/api/developer/admins" &&
+      method === "GET"
+    ) {
+
+      const auth =
+        await requireDeveloper(
+          request,
+          env
+        );
+
+      if (auth.error)
+        return auth.error;
+
+
+      const result =
+        await env.DB.prepare(`
+          SELECT
+            id,
+            name,
+            status,
+            expires_at,
+            created_at
+          FROM reseller_admins
+          ORDER BY id DESC
+        `)
+          .all();
+
+
+      return json(
+        {
+          success: true,
+          admins:
+            result.results || []
+        },
+        200,
+        corsHeaders(request)
+      );
+    }
+
+
+    /* =====================================
+       DEVELOPER REVOKE ADMIN
+       DEVELOPER ONLY
+    ===================================== */
+
+    const revokeAdminMatch =
+      path.match(
+        /^\/api\/developer\/admins\/(\d+)\/revoke$/
+      );
+
+
+    if (
+      revokeAdminMatch &&
+      method === "POST"
+    ) {
+
+      const auth =
+        await requireDeveloper(
+          request,
+          env
+        );
+
+      if (auth.error)
+        return auth.error;
+
+
+      const adminId =
+        Number(
+          revokeAdminMatch[1]
+        );
+
+
+      const result =
+        await env.DB.prepare(`
+          UPDATE reseller_admins
+          SET status = 'revoked'
+          WHERE id = ?
+        `)
+          .bind(adminId)
+          .run();
+
+
+      /*
+        Immediately destroy all active
+        sessions belonging to this admin.
+      */
+
+      await env.DB.prepare(`
+        DELETE FROM admin_sessions
+        WHERE admin_id = ?
+      `)
+        .bind(adminId)
+        .run();
+
+
+      return json(
+        {
+          success: true,
+          changed:
+            result.meta?.changes || 0
+        },
+        200,
+        corsHeaders(request)
+      );
+    }
+
+
+    /* =====================================
+       DEVELOPER ACTIVATE ADMIN
+       DEVELOPER ONLY
+    ===================================== */
+
+    const activateAdminMatch =
+      path.match(
+        /^\/api\/developer\/admins\/(\d+)\/activate$/
+      );
+
+
+    if (
+      activateAdminMatch &&
+      method === "POST"
+    ) {
+
+      const auth =
+        await requireDeveloper(
+          request,
+          env
+        );
+
+      if (auth.error)
+        return auth.error;
+
+
+      const adminId =
+        Number(
+          activateAdminMatch[1]
+        );
+
+
+      const admin =
+        await env.DB.prepare(`
+          SELECT
+            id,
+            status,
+            expires_at
+          FROM reseller_admins
+          WHERE id = ?
+          LIMIT 1
+        `)
+          .bind(adminId)
+          .first();
+
+
+      if (!admin) {
+        return json(
+          {
+            success: false,
+            error:
+              "Admin not found"
+          },
+          404,
+          corsHeaders(request)
+        );
+      }
+
+
+      if (
+        isExpired(
+          admin.expires_at
+        )
+      ) {
+        return json(
+          {
+            success: false,
+            error:
+              "Admin access has expired. Create a new Admin Key or extend the expiry first."
+          },
+          403,
+          corsHeaders(request)
+        );
+      }
+
+
+      await env.DB.prepare(`
+        UPDATE reseller_admins
+        SET status = 'active'
+        WHERE id = ?
+      `)
+        .bind(adminId)
+        .run();
+
+
+      return json(
+        {
+          success: true
+        },
+        200,
+        corsHeaders(request)
+      );
     }
 
 
@@ -812,8 +1118,15 @@ async function handleRequest(
       method === "POST"
     ) {
 
-      const body =
-        await request.json();
+      let body = {};
+
+      try {
+        body =
+          await request.json();
+      } catch {
+        body = {};
+      }
+
 
       const adminKey =
         String(
@@ -822,7 +1135,6 @@ async function handleRequest(
 
 
       if (!adminKey) {
-
         return json(
           {
             success: false,
@@ -832,12 +1144,13 @@ async function handleRequest(
           400,
           corsHeaders(request)
         );
-
       }
 
 
       const keyHash =
-        await sha256(adminKey);
+        await sha256(
+          adminKey
+        );
 
 
       const admin =
@@ -856,7 +1169,6 @@ async function handleRequest(
 
 
       if (!admin) {
-
         return json(
           {
             success: false,
@@ -866,12 +1178,13 @@ async function handleRequest(
           401,
           corsHeaders(request)
         );
-
       }
 
 
-      if (admin.status !== "active") {
-
+      if (
+        admin.status !==
+        "active"
+      ) {
         return json(
           {
             success: false,
@@ -881,7 +1194,6 @@ async function handleRequest(
           403,
           corsHeaders(request)
         );
-
       }
 
 
@@ -890,7 +1202,6 @@ async function handleRequest(
           admin.expires_at
         )
       ) {
-
         return json(
           {
             success: false,
@@ -900,7 +1211,6 @@ async function handleRequest(
           403,
           corsHeaders(request)
         );
-
       }
 
 
@@ -960,7 +1270,6 @@ async function handleRequest(
             )
         }
       );
-
     }
 
 
@@ -979,10 +1288,12 @@ async function handleRequest(
           "rokhan_session"
         );
 
+
       if (token) {
 
         const hash =
           await sha256(token);
+
 
         const session =
           await env.DB.prepare(`
@@ -996,14 +1307,12 @@ async function handleRequest(
 
 
         if (session) {
-
           await logActivity(
             env,
             session.admin_id,
             "LOGOUT",
             "Admin logout"
           );
-
         }
 
 
@@ -1013,7 +1322,6 @@ async function handleRequest(
         `)
           .bind(hash)
           .run();
-
       }
 
 
@@ -1028,7 +1336,6 @@ async function handleRequest(
             clearAdminSessionCookie()
         }
       );
-
     }
 
 
@@ -1066,7 +1373,6 @@ async function handleRequest(
         200,
         corsHeaders(request)
       );
-
     }
 
 
@@ -1175,28 +1481,43 @@ async function handleRequest(
           success: true,
           stats: {
             total_keys:
-              Number(keys?.total || 0),
+              Number(
+                keys?.total || 0
+              ),
+
             active_keys:
-              Number(activeKeys?.total || 0),
+              Number(
+                activeKeys?.total || 0
+              ),
+
             expired_keys:
-              Number(expiredKeys?.total || 0),
+              Number(
+                expiredKeys?.total || 0
+              ),
+
             users:
-              Number(users?.total || 0),
+              Number(
+                users?.total || 0
+              ),
+
             services:
-              Number(services?.total || 0)
+              Number(
+                services?.total || 0
+              )
           },
+
           activity:
             activity.results || []
         },
         200,
         corsHeaders(request)
       );
-
     }
 
 
     /* =====================================
-       USER KEYS
+       USER KEYS - CREATE
+       ADMIN ONLY
     ===================================== */
 
     if (
@@ -1214,8 +1535,14 @@ async function handleRequest(
         return auth.error;
 
 
-      const body =
-        await request.json();
+      let body = {};
+
+      try {
+        body =
+          await request.json();
+      } catch {
+        body = {};
+      }
 
 
       const service =
@@ -1226,8 +1553,9 @@ async function handleRequest(
 
 
       const days =
-        Number(
-          body.days || 30
+        normalizeDays(
+          body.days,
+          30
         );
 
 
@@ -1283,9 +1611,13 @@ async function handleRequest(
         201,
         corsHeaders(request)
       );
-
     }
 
+
+    /* =====================================
+       USER KEYS - LIST
+       ADMIN ONLY
+    ===================================== */
 
     if (
       path === "/api/admin/keys" &&
@@ -1330,9 +1662,13 @@ async function handleRequest(
         200,
         corsHeaders(request)
       );
-
     }
 
+
+    /* =====================================
+       USER KEY REVOKE
+       ADMIN ONLY
+    ===================================== */
 
     const revokeMatch =
       path.match(
@@ -1356,7 +1692,9 @@ async function handleRequest(
 
 
       const id =
-        Number(revokeMatch[1]);
+        Number(
+          revokeMatch[1]
+        );
 
 
       const result =
@@ -1390,9 +1728,13 @@ async function handleRequest(
         200,
         corsHeaders(request)
       );
-
     }
 
+
+    /* =====================================
+       USER KEY ACTIVATE
+       ADMIN ONLY
+    ===================================== */
 
     const activateMatch =
       path.match(
@@ -1416,7 +1758,57 @@ async function handleRequest(
 
 
       const id =
-        Number(activateMatch[1]);
+        Number(
+          activateMatch[1]
+        );
+
+
+      const key =
+        await env.DB.prepare(`
+          SELECT
+            id,
+            expires_at,
+            status
+          FROM reseller_keys
+          WHERE id = ?
+          AND admin_id = ?
+          LIMIT 1
+        `)
+          .bind(
+            id,
+            auth.admin.admin_id
+          )
+          .first();
+
+
+      if (!key) {
+        return json(
+          {
+            success: false,
+            error:
+              "Key not found"
+          },
+          404,
+          corsHeaders(request)
+        );
+      }
+
+
+      if (
+        isExpired(
+          key.expires_at
+        )
+      ) {
+        return json(
+          {
+            success: false,
+            error:
+              "Key has expired"
+          },
+          403,
+          corsHeaders(request)
+        );
+      }
 
 
       await env.DB.prepare(`
@@ -1447,12 +1839,12 @@ async function handleRequest(
         200,
         corsHeaders(request)
       );
-
     }
 
 
     /* =====================================
-       USERS
+       USERS - LIST
+       ADMIN ONLY
     ===================================== */
 
     if (
@@ -1501,9 +1893,13 @@ async function handleRequest(
         200,
         corsHeaders(request)
       );
-
     }
 
+
+    /* =====================================
+       USERS - CREATE
+       ADMIN ONLY
+    ===================================== */
 
     if (
       path === "/api/admin/users" &&
@@ -1520,8 +1916,14 @@ async function handleRequest(
         return auth.error;
 
 
-      const body =
-        await request.json();
+      let body = {};
+
+      try {
+        body =
+          await request.json();
+      } catch {
+        body = {};
+      }
 
 
       const name =
@@ -1537,7 +1939,6 @@ async function handleRequest(
 
 
       if (!name) {
-
         return json(
           {
             success: false,
@@ -1547,7 +1948,37 @@ async function handleRequest(
           400,
           corsHeaders(request)
         );
+      }
 
+
+      if (keyId) {
+
+        const key =
+          await env.DB.prepare(`
+            SELECT id
+            FROM reseller_keys
+            WHERE id = ?
+            AND admin_id = ?
+            LIMIT 1
+          `)
+            .bind(
+              keyId,
+              auth.admin.admin_id
+            )
+            .first();
+
+
+        if (!key) {
+          return json(
+            {
+              success: false,
+              error:
+                "Key does not belong to this admin"
+            },
+            403,
+            corsHeaders(request)
+          );
+        }
       }
 
 
@@ -1592,12 +2023,12 @@ async function handleRequest(
         201,
         corsHeaders(request)
       );
-
     }
 
 
     /* =====================================
-       SERVICES
+       SERVICES - LIST
+       ADMIN ONLY
     ===================================== */
 
     if (
@@ -1638,9 +2069,13 @@ async function handleRequest(
         200,
         corsHeaders(request)
       );
-
     }
 
+
+    /* =====================================
+       SERVICES - CREATE
+       ADMIN ONLY
+    ===================================== */
 
     if (
       path ===
@@ -1658,8 +2093,14 @@ async function handleRequest(
         return auth.error;
 
 
-      const body =
-        await request.json();
+      let body = {};
+
+      try {
+        body =
+          await request.json();
+      } catch {
+        body = {};
+      }
 
 
       const name =
@@ -1669,7 +2110,6 @@ async function handleRequest(
 
 
       if (!name) {
-
         return json(
           {
             success: false,
@@ -1679,7 +2119,6 @@ async function handleRequest(
           400,
           corsHeaders(request)
         );
-
       }
 
 
@@ -1720,14 +2159,13 @@ async function handleRequest(
           409,
           corsHeaders(request)
         );
-
       }
-
     }
 
 
     /* =====================================
        BRANDING GET
+       PUBLIC
     ===================================== */
 
     if (
@@ -1759,7 +2197,6 @@ async function handleRequest(
         200,
         corsHeaders(request)
       );
-
     }
 
 
@@ -1784,8 +2221,14 @@ async function handleRequest(
         return auth.error;
 
 
-      const body =
-        await request.json();
+      let body = {};
+
+      try {
+        body =
+          await request.json();
+      } catch {
+        body = {};
+      }
 
 
       const developerLabel =
@@ -1822,7 +2265,6 @@ async function handleRequest(
         logoData.length >
           2_000_000
       ) {
-
         return json(
           {
             success: false,
@@ -1832,7 +2274,6 @@ async function handleRequest(
           400,
           corsHeaders(request)
         );
-
       }
 
 
@@ -1866,12 +2307,12 @@ async function handleRequest(
         200,
         corsHeaders(request)
       );
-
     }
 
 
     /* =====================================
        ACTIVITY
+       ADMIN ONLY
     ===================================== */
 
     if (
@@ -1916,7 +2357,6 @@ async function handleRequest(
         200,
         corsHeaders(request)
       );
-
     }
 
 
@@ -1930,7 +2370,6 @@ async function handleRequest(
     ) {
 
       if (!env.ASSETS) {
-
         return json(
           {
             success: false,
@@ -1940,13 +2379,18 @@ async function handleRequest(
           500,
           corsHeaders(request)
         );
-
       }
 
-      return env.ASSETS.fetch(request);
 
+      return env.ASSETS.fetch(
+        request
+      );
     }
 
+
+    /* =====================================
+       ROUTE NOT FOUND
+    ===================================== */
 
     return json(
       {
@@ -1960,6 +2404,11 @@ async function handleRequest(
 
   } catch (error) {
 
+    console.error(
+      "Worker error:",
+      error
+    );
+
     return json(
       {
         success: false,
@@ -1971,15 +2420,20 @@ async function handleRequest(
       500,
       corsHeaders(request)
     );
-
   }
-
 }
 
 
+/* =========================================
+   WORKER
+========================================= */
+
 export default {
 
-  async fetch(request, env) {
+  async fetch(
+    request,
+    env
+  ) {
 
     return handleRequest(
       request,
